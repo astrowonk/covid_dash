@@ -2,6 +2,7 @@ import dash
 import dash_core_components as dcc
 from dash_core_components.Slider import Slider
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from numpy.core.numeric import roll
 import plotly.express as px
