@@ -21,15 +21,17 @@ combined['date'] = pd.to_datetime(combined['date'])
 #state_df['date'] = pd.to_datetime(state_df['date'])
 all_states = sorted(list(combined['state'].unique()))
 
-app = dash.Dash('covid_dash', url_base_pathname='/dash/covid/')
+app = dash.Dash('covid_dash',
+                url_base_pathname='/dash/covid/',
+                external_stylesheets=[dbc.themes.YETI])
 server = app.server
 
 markdown_text = '''
-### Dash Implementation of Covid Case Growth Tracker.
+### Covid Case Growth per 100K population
 
 This implements some of the functionality of my [Shiny app for covid case growth](/shiny/covid/).
 It performs and loads faster than Shiny, but the layout is so far much simpler, and the Shiny site is 
-actually Rmarkdown with a Shiny renderer. Presumably a straight Shiny app would be better comparison. 
+actually Rmarkdown with a Shiny renderer. Presumably a straight Shiny app would be better comparison.
 
 Since I'm still getting a handle on the layout of dash apps, I have consolidated County and State data into one plot. You can pick either counties or entire states
 from the multi-selection dropdown. Plots are always normalized per 100K population.
@@ -39,10 +41,8 @@ Shiny link above. All Covid case data comes from the [New York Times](https://gi
 
 '''
 
-app.layout = html.Div(
-    [
-        html.H1("Covid Grow Plots"),
-        dcc.Markdown(markdown_text),
+controls = dbc.Card([
+    dbc.FormGroup([
         html.Label('Choose State or County'),
         dcc.Dropdown(id='states',
                      options=[{
@@ -53,7 +53,9 @@ app.layout = html.Div(
                          'value': x
                      } for x in all_states],
                      value="Virginia",
-                     multi=True),
+                     multi=True)
+    ]),
+    dbc.FormGroup([
         html.Label('Rolling Average Days'),
         dcc.Slider(id='rolling_days',
                    min=1,
@@ -61,14 +63,27 @@ app.layout = html.Div(
                    step=1,
                    value=7,
                    marks={x: f'{x}'
-                          for x in range(15)}),
-        dcc.Graph(id="line-chart"),
-        #the slider is gigantic and I need to learn how to style this.
-    ],
-    style={
-        'marginBottom': 50,
-        'margin_top': 25
-    })
+                          for x in range(15)})
+    ])
+],
+                    body=True)
+
+app.layout = dbc.Container([
+    dcc.Markdown(markdown_text),
+    html.Hr(),
+    dbc.Row(
+        [
+            dbc.Col(controls, md=4),
+            dbc.Col(dcc.Graph(id="line-chart"), md=8),
+        ],
+        align="center",
+    ),
+],
+                           fluid=True,
+                           style={
+                               'marginBottom': 20,
+                               'marginTop': 20
+                           })
 
 
 @app.callback(Output("line-chart", "figure"),
