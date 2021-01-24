@@ -142,12 +142,24 @@ def update_line_chart(states, rolling_days):
                   x="date",
                   y="rolling_case_growth_per_100K",
                   color="state")
-    fig.update_layout(
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-        xaxis_title="Date",
-        yaxis_title="Case Growth Per 100K population",
-    )
 
+    fig.update_layout(margin={
+        'l': 1,
+        'r': 1,
+        'b': 1,
+        't': 10,
+        'pad': 1
+    },
+                      legend=dict(yanchor="top",
+                                  y=0.99,
+                                  xanchor="left",
+                                  x=0.01),
+                      xaxis_title=None,
+                      yaxis_title="Case Growth Per 100K population",
+                      autosize=True,
+                      font=dict(size=10))
+    fig.update_yaxes(automargin=True)
+    fig.update_xaxes(automargin=True)
     return fig
 
 
