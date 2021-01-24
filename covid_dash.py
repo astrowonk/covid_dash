@@ -22,9 +22,26 @@ all_states = sorted(list(combined['state'].unique()))
 
 app = dash.Dash('covid_dash', url_base_pathname='/dash/covid/')
 server = app.server
+
+markdown_text = '''
+### Dash Implementation of Covid Case Growth Tracker.
+
+This implements some of the functionality of my [Shiny app for covid case growth](/shiny/covid/).
+It performs and loads faster than Shiny, but the layout is so far much simpler, and the Shiny site is 
+actually Rmarkdown with a Shiny renderer. Presumably a straight Shiny app would be better comparison. 
+
+Since I'm still getting a handle on the layout of dash apps, I have consolidated County and State data into one plot. You can pick either counties or entire states
+from the multi-selection dropdown. Plots are always normalized per 100K population.
+
+Data has been preprocessed/merged with census population data before loading into this app. More details on data sources in the About section of the 
+Shiny link above. All Covid case data comes from the [New York Times](https://github.com/nytimes/covid-19-data)
+
+'''
+
 app.layout = html.Div(
     [
         html.H1("Covid Grow Plots"),
+        dcc.Markdown(markdown_text),
         html.Label('Choose State or County'),
         dcc.Dropdown(id='states',
                      options=[{
@@ -68,8 +85,12 @@ def update_line_chart(states, rolling_days):
                   x="date",
                   y="rolling_case_growth_per_100K",
                   color='state')
-    fig.update_layout(
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
+    fig.update_layout(legend=dict(yanchor="top",
+                                  y=0.99,
+                                  xanchor="left",
+                                  x=0.01),
+                      xaxis_title="Date",
+                      yaxis_title="Case Growth Per 100K population")
 
     return fig
 
