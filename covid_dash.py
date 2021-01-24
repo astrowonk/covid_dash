@@ -21,12 +21,16 @@ combined["date"] = pd.to_datetime(combined["date"])
 # state_df['date'] = pd.to_datetime(state_df['date'])
 all_states = sorted(list(combined["state"].unique()))
 
-app = dash.Dash(
-    "covid_dash",
-    url_base_pathname="/dash/covid/",
-    external_stylesheets=[dbc.themes.YETI],
-    title="Covid Case Growth Plots",
-)
+app = dash.Dash("covid_dash",
+                url_base_pathname="/dash/covid/",
+                external_stylesheets=[dbc.themes.YETI],
+                title="Covid Case Growth Plots",
+                meta_tags=[
+                    {
+                        "name": "viewport",
+                        "content": "width=device-width, initial-scale=1"
+                    },
+                ])
 server = app.server
 
 markdown_text = """
