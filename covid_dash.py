@@ -20,7 +20,7 @@ combined['date'] = pd.to_datetime(combined['date'])
 #state_df['date'] = pd.to_datetime(state_df['date'])
 all_states = sorted(list(combined['state'].unique()))
 
-app = dash.Dash('covid_dash', url_base_pathname='/dash_test/')
+app = dash.Dash('covid_dash', url_base_pathname='/dash/covid/')
 server = app.server
 app.layout = html.Div(
     [
