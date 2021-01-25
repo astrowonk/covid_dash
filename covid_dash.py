@@ -1,3 +1,4 @@
+from os import stat
 import dash
 import dash_core_components as dcc
 from dash_core_components.Slider import Slider
@@ -69,6 +70,21 @@ STYLE = {"marginBottom": 20, "marginTop": 20}
 controls = dbc.Card(
     [
         dbc.FormGroup([
+            dcc.Checklist(id='state_county_checklist',
+                          options=[{
+                              'label': x,
+                              'value': x
+                          } for x in ["States", "Counties"]],
+                          value=["States", "Counties"],
+                          inputStyle={
+                              "margin-left": "5px",
+                              "margin-right": "5px",
+                              "padding-right": "5px"
+                          },
+                          style={
+                              'display': 'block',
+                              'width': '30%'
+                          }),
             html.Label("Choose State or County"),
             dcc.Dropdown(
                 id="states",
@@ -125,10 +141,28 @@ tabs = dbc.Tabs([
 app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
 
 
+@app.callback(Output("states", "options"),
+              [Input("state_county_checklist", "value")])
+def update_dropdown(state_county_check_list):
+    if len(state_county_check_list) == 2:
+        return [{
+            "label": x,
+            "value": x
+        } if "," in x else {
+            "label": f"State of {x}",
+            "value": x
+        } for x in all_states]
+    elif "States" in state_county_check_list:
+        return [{"label": x, "value": x} for x in all_states if "," not in x]
+    return [{"label": x, "value": x} for x in all_states if "," in x]
+
+
 @app.callback(
     Output("line-chart", "figure"),
-    [Input("states", "value"),
-     Input("rolling_days", "value")],
+    [
+        Input("states", "value"),
+        Input("rolling_days", "value"),
+    ],
 )
 def update_line_chart(states, rolling_days):
     dff = (combined.query("state in @states").sort_values(["date", "state"
