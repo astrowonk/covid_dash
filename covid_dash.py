@@ -15,9 +15,9 @@ county_df = pd.read_csv("data_cache/us-counties.csv")
 county_df = county_df.drop("state", axis=1).rename({"state_county": "state"},
                                                    axis=1)
 combined = pd.concat([
-    county_df[["date", "state", "case_growth_per_100K"]],
-    state_df[["date", "state", "case_growth_per_100K"]],
-])
+    county_df[["date", "state", "case_growth_per_100K", "case_growth"]],
+    state_df[["date", "state", "case_growth_per_100K", "case_growth"]],
+]).rename({'case_growth': 'New Cases'}, axis=1)
 combined["date"] = pd.to_datetime(combined["date"])
 # state_df['date'] = pd.to_datetime(state_df['date'])
 all_states = sorted(list(combined["state"].unique()))
@@ -172,10 +172,19 @@ def update_line_chart(states, rolling_days):
         "case_growth_per_100K", "date"
     ]].rolling(f"{rolling_days}D",
                on="date").mean().reset_index()["case_growth_per_100K"])
+    dff["rolling_new_cases"] = (dff.groupby("state")[[
+        "New Cases", "date"
+    ]].rolling(f"{rolling_days}D",
+               on="date").mean().reset_index()["New Cases"])
     fig = px.line(dff,
                   x="date",
                   y="rolling_case_growth_per_100K",
-                  color="state")
+                  color="state",
+                  hover_data=[
+                      'date', 'rolling_new_cases',
+                      'rolling_case_growth_per_100K', 'New Cases',
+                      'case_growth_per_100K'
+                  ])
 
     fig.update_layout(margin={
         'l': 1,
@@ -189,7 +198,7 @@ def update_line_chart(states, rolling_days):
                                   xanchor="left",
                                   x=0.01),
                       xaxis_title=None,
-                      yaxis_title="Case Growth Per 100K population",
+                      yaxis_title="New Reported Cases Per 100,000",
                       autosize=True,
                       font=dict(size=10))
     fig.update_yaxes(automargin=True)
