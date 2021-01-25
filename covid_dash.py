@@ -51,9 +51,9 @@ You can pick either counties or entire states
 from the multi-selection dropdown. Plots are always normalized per 100K population.
 
 Covid Tracking and the New York Times have had at times very different total counts for some states, which can lead to very 
-different case growth plots. Covid Tracking updates more frequently, but I am using the NYT as the default data source for state plots.
+different case growth plots. Covid Tracking updates more frequently, but I am using the NYT as the default data source for state plots. Covid Tracking includes a `positiveIncrease` column. For the NY Times data, this column is computed with a simple `mutate(case_growth = cases - lag(cases))` after sorting by date in an R script, prior to loading in this app.
 
-Covid Tracking includes a `positiveIncrease` column. For the NY Times data, this column is computed with a simple `mutate(case_growth = cases - lag(cases))` after sorting by date in an R script, prior to loading in this app.
+Since I'm combining state and county level data, I've turned off the ability to switch between Covid Tracking and NY Times data for now.
 
 I have looked for alternatives to county-level data from the [NY Times github](https://github.com/nytimes/covid-19-data). I haven't found any useful sources yet. It is unclear where the [John Hopkins](https://github.com/CSSEGISandData/COVID-19) county data comes from, and the data files that do exist there have a difficult to parse format, with the [values in different columns for different dates](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv)).
 
