@@ -53,9 +53,9 @@ controls = dbc.Card(
                           },
                           style={
                               'display': 'block',
-                              'width': '25%'
+                              'width': '20%'
                           }),
-            html.Label("Choose State or County"),
+            html.Label("Choose State(s) and/or Counties"),
             dcc.Dropdown(
                 id="states",
                 options=[{
@@ -80,7 +80,7 @@ controls = dbc.Card(
                 marks={x: f"{x}"
                        for x in range(15)},
             ),
-            dcc.Interval(id='interval', interval=5000, n_intervals=0)
+            dcc.Interval(id='interval', interval=30000, n_intervals=0)
         ]),
     ],
     body=True,
