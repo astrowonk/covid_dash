@@ -53,7 +53,7 @@ controls = dbc.Card(
                           },
                           style={
                               'display': 'block',
-                              'width': '20%'
+                              'width': '50%'
                           }),
             html.Label("Choose State(s) and/or Counties"),
             dcc.Dropdown(
