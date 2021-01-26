@@ -83,7 +83,7 @@ controls = dbc.Card(
                           },
                           style={
                               'display': 'block',
-                              'width': '30%'
+                              'width': '25%'
                           }),
             html.Label("Choose State or County"),
             dcc.Dropdown(
@@ -200,7 +200,7 @@ def update_line_chart(states, rolling_days):
                       xaxis_title=None,
                       yaxis_title="New Reported Cases Per 100,000",
                       autosize=True,
-                      font=dict(size=10))
+                      font=dict(size=11))
     fig.update_yaxes(automargin=True)
     fig.update_xaxes(automargin=True)
     return fig
