@@ -1,9 +1,12 @@
 markdown_text = """
-### Covid Case Growth
+### Covid New Cases
 
-This implements much of the functionality of my [Shiny app for covid case growth](/shiny/covid/) in [Dash/Flask](https://dash.plotly.com) for python.
+This implements much of the functionality of my [Shiny app for covid case growth](/shiny/covid/) in [Dash/Flask](https://dash.plotly.com) for python. You can select one or more counties or states to plot and compare their population normalized covid-19 new cases by day.
 
 Data is preprocessed/merged with census population data with R scripts twice a day. More details on data sources in the About section below. All Covid case data comes from the [New York Times](https://github.com/nytimes/covid-19-data)
+
+*Double click to back out of the default zoom*
+
 """
 
 about_text = """So far, this Dash version performs and loads faster than Shiny, but the layout is still  simpler, and the Shiny site is 
@@ -24,6 +27,7 @@ I have looked for alternatives to county-level data from the [NY Times github](h
 For state population I'm using POPESTIMATE19 from various CSV files available from the US Census. [US Census](https://www.census.gov/newsroom/press-kits/2019/national-state-estimates.html)
 
 For county level I resolved UTF-8 issues (thanks BBedit!) with this [local data set with FIPS codes](https://github.com/prairie-guy/2019-State-and-County-Population-with-FIPS-key) and use that for merging.
+
 
 
 
