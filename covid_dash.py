@@ -163,8 +163,9 @@ graph_tab_content = dbc.Container([
         } for i in myDataLoader.thedata.columns],
         data=myDataLoader.thedata.loc[
             (myDataLoader.thedata['state'].apply(lambda x: "," not in x))
-            & (myDataLoader.thedata["date"] == max(
-                myDataLoader.thedata["date"]))].to_dict('records'),
+            &
+            (myDataLoader.thedata["date"] == max(myDataLoader.thedata["date"])
+             )].sort_values('case_growth_per_100K').to_dict('records'),
         sort_action='native')
 ])
 
