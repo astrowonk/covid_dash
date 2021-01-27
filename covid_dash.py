@@ -161,8 +161,10 @@ graph_tab_content = dbc.Container([
             "name": i,
             "id": i
         } for i in myDataLoader.thedata.columns],
-        data=myDataLoader.thedata.loc[myDataLoader.thedata["date"] == max(
-            myDataLoader.thedata["date"])].to_dict('records'),
+        data=myDataLoader.thedata.loc[
+            (myDataLoader.thedata['state'].apply(lambda x: "," not in x))
+            & (myDataLoader.thedata["date"] == max(
+                myDataLoader.thedata["date"]))].to_dict('records'),
         sort_action='native')
 ])
 
