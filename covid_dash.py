@@ -1,8 +1,6 @@
 from os import stat
 import dash
-from dash_bootstrap_components._components.FormGroup import FormGroup
 import dash_core_components as dcc
-from dash_core_components.Slider import Slider
 import dash_html_components as html
 import dash_table
 import dash_bootstrap_components as dbc
@@ -11,6 +9,7 @@ from numpy.core.numeric import roll
 import plotly.express as px
 import pandas as pd
 from md_text import about_text, markdown_text
+from datetime import datetime, time, timedelta
 
 # If I ever  deploy this I need to rysnc data_cache into this directory.
 
@@ -31,7 +30,6 @@ class dataLoader:
     lastmt = None
 
     def __init__(self):
-        pass
         self.path = "data_cache/us-states.csv"
         self.reload_data()
 
@@ -52,6 +50,38 @@ class dataLoader:
             ]).rename({'case_growth': 'New Cases'}, axis=1)
 
             self.combined["date"] = pd.to_datetime(self.combined["date"])
+
+    @staticmethod
+    def roll_the_data(dff, rolling_days):
+        dff["rolling_case_growth_per_100K"] = (dff.groupby("state")[[
+            "case_growth_per_100K", "date"
+        ]].rolling(f"{rolling_days}D",
+                   on="date").mean().reset_index()["case_growth_per_100K"])
+        dff["rolling_new_cases"] = (dff.groupby("state")[[
+            "New Cases", "date"
+        ]].rolling(f"{rolling_days}D",
+                   on="date").mean().reset_index()["New Cases"])
+        return dff
+
+    def graph_query(self, states, rolling_days):
+        dff = (self.thedata.query("state in @states").sort_values(
+            ["date", "state"]).reset_index())
+        # this rolling 7 day thing was truly tedious but I guess time + 7D makes more sense than just integer rolling.
+
+        return self.roll_the_data(dff, rolling_days)
+
+    def table_query(self, rolling_days):
+        dff = (self.thedata.loc[(
+            self.thedata['state'].apply(lambda x: "," not in x))])
+        cutoff = (dff["date"].max() - timedelta(days=rolling_days - 1))
+        dff = dff.query("date >= @cutoff")
+        out = dff.groupby('state')[[
+            'case_growth_per_100K'
+        ]].mean().sort_values('case_growth_per_100K').reset_index()
+        out['date'] = cutoff
+        return out.to_dict('records')
+
+        # this rolling 7 day thing was truly tedious but I guess time + 7D makes more sense than just integer rolling.
 
     @property
     def thedata(self):
@@ -155,18 +185,12 @@ about_tab_content = dbc.Container([dcc.Markdown(about_text)],
                                   style=STYLE)
 
 graph_tab_content = dbc.Container([
-    dash_table.DataTable(
-        id='table',
-        columns=[{
-            "name": i,
-            "id": i
-        } for i in myDataLoader.thedata.columns],
-        data=myDataLoader.thedata.loc[
-            (myDataLoader.thedata['state'].apply(lambda x: "," not in x))
-            &
-            (myDataLoader.thedata["date"] == max(myDataLoader.thedata["date"])
-             )].sort_values('case_growth_per_100K').to_dict('records'),
-        sort_action='native')
+    dash_table.DataTable(id='table',
+                         columns=[{
+                             "name": i,
+                             "id": i
+                         } for i in ['case_growth_per_100K', 'state', 'date']],
+                         sort_action='native')
 ])
 
 tabs = dbc.Tabs([
@@ -176,6 +200,12 @@ tabs = dbc.Tabs([
 ])
 
 app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
+
+
+@app.callback(Output("table", "data"), [Input('rolling_days', 'value')])
+def update_table(rolling_days):
+    dff = myDataLoader.table_query(rolling_days)
+    return dff
 
 
 @app.callback(Output("states", "options"),
@@ -205,17 +235,9 @@ def update_dropdown(state_county_check_list):
 )
 def update_line_chart(states, rolling_days, n_intervals, min_date):
 
-    dff = (myDataLoader.thedata.query("state in @states").sort_values(
-        ["date", "state"]).reset_index())
+    dff = (myDataLoader.graph_query(states, rolling_days))
     # this rolling 7 day thing was truly tedious but I guess time + 7D makes more sense than just integer rolling.
-    dff["rolling_case_growth_per_100K"] = (dff.groupby("state")[[
-        "case_growth_per_100K", "date"
-    ]].rolling(f"{rolling_days}D",
-               on="date").mean().reset_index()["case_growth_per_100K"])
-    dff["rolling_new_cases"] = (dff.groupby("state")[[
-        "New Cases", "date"
-    ]].rolling(f"{rolling_days}D",
-               on="date").mean().reset_index()["New Cases"])
+
     fig = px.line(dff,
                   x="date",
                   y="rolling_case_growth_per_100K",
