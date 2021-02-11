@@ -118,22 +118,22 @@ controls = dbc.Card([
                              min_date_allowed="2020-03-08",
                              max_date_allowed=combined['date'].max(),
                              initial_visible_month="2020-10-01",
-                             date="2020-10-01"),
+                             date="2020-10-01",
+                             persistence=True),
     ]),
     dbc.FormGroup([
         html.Label("Choose State(s) and/or Counties"),
-        dcc.Dropdown(
-            id="states",
-            options=[{
-                "label": x,
-                "value": x
-            } if "," in x else {
-                "label": f"State of {x}",
-                "value": x
-            } for x in all_states],
-            value="Virginia",
-            multi=True,
-        ),
+        dcc.Dropdown(id="states",
+                     options=[{
+                         "label": x,
+                         "value": x
+                     } if "," in x else {
+                         "label": f"State of {x}",
+                         "value": x
+                     } for x in all_states],
+                     value="Virginia",
+                     multi=True,
+                     persistence=True),
         dcc.Checklist(id='state_county_checklist',
                       options=[{
                           'label': x,
@@ -148,7 +148,8 @@ controls = dbc.Card([
                       style={
                           'display': 'block',
                           'width': '50%'
-                      }),
+                      },
+                      persistence=True),
     ]),
     dbc.FormGroup([
         html.Label("Rolling Average Days"),
