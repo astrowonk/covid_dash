@@ -20,9 +20,9 @@ county_df = county_df.drop("state", axis=1).rename({"state_county": "state"},
 combined = pd.concat([
     county_df[["state", "date"]],
     state_df[["state", "date"]],
-])
+]).dropna()
 # state_df['date'] = pd.to_datetime(state_df['date'])
-all_states = sorted(list(combined["state"].unique()))
+all_states = sorted(list(combined["state"].dropna().unique()))
 
 
 class dataLoader:
@@ -47,7 +47,9 @@ class dataLoader:
                 state_df[[
                     "date", "state", "case_growth_per_100K", "case_growth"
                 ]],
-            ]).rename({'case_growth': 'New Cases'}, axis=1)
+            ]).rename({
+                'case_growth': 'New Cases'
+            }, axis=1).dropna()
 
             self.combined["date"] = pd.to_datetime(self.combined["date"])
 
