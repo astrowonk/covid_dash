@@ -34,7 +34,7 @@ app = dash.Dash("covid_dash",
                     },
                 ])
 server = app.server
-
+INTERVAL_MINUTES = 5
 STYLE = {"marginBottom": 20, "marginTop": 20}
 
 controls = dbc.Card(
@@ -80,7 +80,7 @@ controls = dbc.Card(
                 marks={x: f"{x}"
                        for x in range(15)},
             ),
-            dcc.Interval(id='interval', interval=30000, n_intervals=0)
+            dcc.Interval(id='interval', interval=1000*60*INTERVAL_MINUTES, n_intervals=0)
         ]),
     ],
     body=True,
