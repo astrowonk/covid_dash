@@ -10,7 +10,6 @@ import plotly.express as px
 import pandas as pd
 from md_text import about_text, markdown_text
 
-#I hav
 state_df = pd.read_csv("data_cache/us-states.csv")
 county_df = pd.read_csv("data_cache/us-counties.csv")
 county_df = county_df.drop("state", axis=1).rename({"state_county": "state"},

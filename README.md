@@ -1,4 +1,4 @@
-# covid_dash
+# Covid-19 Per Capita New Case in Dash
 Dash implementation of Covid case plot.
 
 This app implements per-capita normalized plots of case growth of Covid-19, using data from the [New York Times](https://github.com/nytimes/covid-19-data).
