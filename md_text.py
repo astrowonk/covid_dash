@@ -25,6 +25,7 @@ For state population I'm using POPESTIMATE19 from various CSV files available fr
 
 For county level I resolved UTF-8 issues (thanks BBedit!) with this [local data set with FIPS codes](https://github.com/prairie-guy/2019-State-and-County-Population-with-FIPS-key) and use that for merging.
 
+Code now all available on [my github](https://github.com/astrowonk/covid_dash)
 
 
 """

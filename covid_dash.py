@@ -10,8 +10,7 @@ import plotly.express as px
 import pandas as pd
 from md_text import about_text, markdown_text
 
-# If I ever  deploy this I need to rysnc data_cache into this directory.
-
+#I hav
 state_df = pd.read_csv("data_cache/us-states.csv")
 county_df = pd.read_csv("data_cache/us-counties.csv")
 county_df = county_df.drop("state", axis=1).rename({"state_county": "state"},
@@ -21,6 +20,7 @@ combined = pd.concat([
     state_df[["state"]],
 ])
 # state_df['date'] = pd.to_datetime(state_df['date'])
+# I think this is here because the layout needs this list and I can't get it from  DataLoader?
 all_states = sorted(list(combined["state"].unique()))
 
 app = dash.Dash("covid_dash",
@@ -80,7 +80,9 @@ controls = dbc.Card(
                 marks={x: f"{x}"
                        for x in range(15)},
             ),
-            dcc.Interval(id='interval', interval=1000*60*INTERVAL_MINUTES, n_intervals=0)
+            dcc.Interval(id='interval',
+                         interval=1000 * 60 * INTERVAL_MINUTES,
+                         n_intervals=0)
         ]),
     ],
     body=True,
@@ -129,16 +131,21 @@ def update_dropdown(state_county_check_list):
 
 
 class dataLoader:
+    """Makes sure the data is the most recent, rather than statically load it once."""
     combined = None
     lastmt = None
 
     def __init__(self):
         pass
         self.path = "data_cache/us-states.csv"
+
         self.reload_data()
 
     def reload_data(self):
+        """checks mod times and loads the data"""
         if not self.lastmt or stat(self.path).st_mtime > self.lastmt:
+            #we should probably import threading and just have a therad just call this method every 30 min rather than
+            #the Interval stuff I'm doing.
             self.lastmt = stat(self.path).st_mtime
             state_df = pd.read_csv("data_cache/us-states.csv")
             county_df = pd.read_csv("data_cache/us-counties.csv")
