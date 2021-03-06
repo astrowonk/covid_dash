@@ -3,7 +3,7 @@ markdown_text = """
 
 This implements much of the functionality of my [Shiny app for covid case growth](/shiny/covid/) in [Dash/Flask](https://dash.plotly.com) for python.
 
-Data is preprocessed/merged with census population data with R scripts twice a day. More details on data sources in the About section below. All Covid case data comes from the [New York Times](https://github.com/nytimes/covid-19-data)
+Data is preprocessed/merged with census population data with R scripts twice a day. More details on data sources in the About section below. All Covid case data comes from the [New York Times](https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html), which hosts the data on [their github repository](https://github.com/nytimes/covid-19-data).
 """
 
 about_text = """So far, this Dash version performs and loads faster than Shiny, but the layout is still  simpler, and the Shiny site is 

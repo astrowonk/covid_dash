@@ -20,7 +20,7 @@ combined = pd.concat([
 ])
 # state_df['date'] = pd.to_datetime(state_df['date'])
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
-all_states = sorted(list(combined["state"].unique()))
+all_states = sorted(list(combined["state"].dropna().unique()))
 
 app = dash.Dash("covid_dash",
                 url_base_pathname="/dash/covid/",
