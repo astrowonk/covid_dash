@@ -20,7 +20,8 @@ combined = pd.concat([
 ])
 # state_df['date'] = pd.to_datetime(state_df['date'])
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
-all_states = sorted(list(combined["state"].dropna().unique()))
+all_states = sorted(list(state_df["state"].dropna().unique()))
+all_counties = sorted(list(county_df["state"].dropna().unique()))
 
 app = dash.Dash("covid_dash",
                 url_base_pathname="/dash/covid/",
@@ -39,34 +40,24 @@ STYLE = {"marginBottom": 20, "marginTop": 20}
 controls = dbc.Card(
     [
         dbc.FormGroup([
-            dcc.Checklist(id='state_county_checklist',
-                          options=[{
-                              'label': x,
-                              'value': x
-                          } for x in ["States", "Counties"]],
-                          value=["States", "Counties"],
-                          inputStyle={
-                              "margin-left": "5px",
-                              "margin-right": "5px",
-                              "padding-right": "5px"
-                          },
-                          style={
-                              'display': 'block',
-                              'width': '50%'
-                          },
-                          persistence=True),
-            html.Label("Choose State(s) and/or Counties"),
+            html.Label("Choose States"),
             dcc.Dropdown(id="states",
                          options=[{
                              "label": x,
                              "value": x
-                         } if "," in x else {
-                             "label": f"State of {x}",
-                             "value": x
                          } for x in all_states],
-                         value="Virginia",
+                         value=["Virginia"],
                          multi=True,
                          persistence=True),
+            html.Label("Choose Counties"),
+            dcc.Dropdown(id="counties",
+                         options=[{
+                             "label": x,
+                             "value": x
+                         } for x in all_counties],
+                         value=[],
+                         multi=True,
+                         persistence=True)
         ]),
         dbc.FormGroup([
             html.Label("Rolling Average Days"),
@@ -111,22 +102,6 @@ tabs = dbc.Tabs([
 ])
 
 app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
-
-
-@app.callback(Output("states", "options"),
-              [Input("state_county_checklist", "value")])
-def update_dropdown(state_county_check_list):
-    if len(state_county_check_list) == 2:
-        return [{
-            "label": x,
-            "value": x
-        } if "," in x else {
-            "label": f"State of {x}",
-            "value": x
-        } for x in all_states]
-    elif "States" in state_county_check_list:
-        return [{"label": x, "value": x} for x in all_states if "," not in x]
-    return [{"label": x, "value": x} for x in all_states if "," in x]
 
 
 class dataLoader:
@@ -174,14 +149,17 @@ myDataLoader = dataLoader()
     Output("line-chart", "figure"),
     [
         Input("states", "value"),
+        Input('counties', 'value'),
         Input("rolling_days", "value"),
         Input("interval", "n_intervals")
     ],
 )
-def update_line_chart(states, rolling_days, n_intervals):
-
-    dff = (myDataLoader.thedata.query("state in @states").sort_values(
-        ["date", "state"]).reset_index())
+def update_line_chart(states, counties, rolling_days, n_intervals):
+    states_and_counties = states + counties
+    print(states_and_counties)
+    dff = (myDataLoader.thedata.query(
+        "state in @states_and_counties").sort_values(["date",
+                                                      "state"]).reset_index())
     # this rolling 7 day thing was truly tedious but I guess time + 7D makes more sense than just integer rolling.
     dff["rolling_case_growth_per_100K"] = (dff.groupby("state")[[
         "case_growth_per_100K", "date"
