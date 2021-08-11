@@ -177,14 +177,15 @@ def update_line_chart(states, counties, rolling_days, n_intervals):
                       'date', 'rolling_new_cases',
                       'rolling_case_growth_per_100K', 'New Cases',
                       'case_growth_per_100K'
-                  ])
+                  ],
+                  labels={'state': ''})
 
     fig.update_layout(margin={
         'l': 1,
         'r': 1,
         'b': 1,
         't': 10,
-        'pad': 1
+        'pad': 1,
     },
                       legend=dict(yanchor="top",
                                   y=0.99,
@@ -196,6 +197,7 @@ def update_line_chart(states, counties, rolling_days, n_intervals):
                       font=dict(size=12))
     fig.update_yaxes(automargin=True)
     fig.update_xaxes(automargin=True)
+
     return fig
 
 
