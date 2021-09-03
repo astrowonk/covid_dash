@@ -3,6 +3,4 @@
 
 This app implements per-capita normalized plots of linear case growth of Covid-19, using data from the [New York Times](https://github.com/nytimes/covid-19-data).
 
-My original app was written in Shiny, so most of the code that downloads and merges is still written in R. I have included these scripts, though I think I got the dependencies right, they actually run daily from another repo. I should probably rewrite these with pandas at some point.
-
-This code is currently running live at [my web site](https://marcoshuerta.com/dash/covid/).
+I have rewritten the downloaded and merge scripts with python/pandas. The files are downloaded and merged twice a day in for the app when running live at [my web site](https://marcoshuerta.com/dash/covid/).
