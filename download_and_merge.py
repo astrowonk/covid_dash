@@ -98,14 +98,10 @@ def upload_county_to_sql():
     print('perfoming operations on county dataframe')
     # county_data['date_str'] = county_data['date'].apply(
     #     lambda x: x.strftime('%Y-%m-%d'))
-    county_data[
-        'county_state'] = county_data['county'] + ', ' + county_data['state']
+    county_data['state'] = county_data['county'] + ', ' + county_data['state']
     gc.collect()
     print("Writing to sql counties")
-    county_data.drop('state', axis=1,
-                     errors='ignore').rename(columns={
-                         'county_state': 'state'
-                     }).to_csv('temp.csv', chunksize=10000, index=False)
+    county_data.to_csv('temp.csv', chunksize=2500, index=False)
 
 
 if __name__ == '__main__':
