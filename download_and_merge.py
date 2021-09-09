@@ -99,7 +99,7 @@ def upload_county_to_sql():
     county_data['date'] = county_data['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))
     county_data['state'] = county_data['county'] + ', ' + county_data['state']
-
+    gc.collect()
     print("Writing to sql counties")
     county_data.to_sql('counties',
                        dbc,
