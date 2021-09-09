@@ -110,7 +110,7 @@ def upload_county_to_sql():
                                if_exists='replace',
                                dtype=dytpe_dict,
                                index=False,
-                               chunksize=5000,
+                               chunksize=2500,
                                method='multi')
 
 
