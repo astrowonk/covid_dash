@@ -1,7 +1,6 @@
 from os import stat
 import dash
 import dash_core_components as dcc
-from dash_core_components.Slider import Slider
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
@@ -10,18 +9,54 @@ import plotly.express as px
 import pandas as pd
 from md_text import about_text, markdown_text
 
-state_df = pd.read_csv("data_cache/us-states.csv")
-county_df = pd.read_csv("data_cache/us-counties.csv")
-county_df = county_df.drop("state", axis=1).rename({"state_county": "state"},
-                                                   axis=1)
-combined = pd.concat([
-    county_df[["state"]],
-    state_df[["state"]],
-])
 # state_df['date'] = pd.to_datetime(state_df['date'])
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
-all_states = sorted(list(state_df["state"].dropna().unique()))
-all_counties = sorted(list(county_df["state"].dropna().unique()))
+
+
+class dataLoader:
+    """Makes sure the data is the most recent, rather than statically load it once."""
+    combined = None
+    lastmt = None
+
+    def __init__(self):
+        self.path = "data_cache/us-states.csv"
+
+        self.reload_data()
+
+    def reload_data(self):
+        """checks mod times and loads the data"""
+        if not self.lastmt or stat(self.path).st_mtime > self.lastmt:
+            #we should probably import threading and just have a therad just call this method every 30 min rather than
+            #the Interval stuff I'm doing.
+            self.lastmt = stat(self.path).st_mtime
+            state_df = pd.read_csv("data_cache/us-states.csv")
+
+            self.all_states = sorted(list(state_df.state.unique()))
+            county_df = pd.read_csv("data_cache/us-counties.csv")
+
+            county_df = county_df.drop("state", axis=1,
+                                       errors='ignore').rename(
+                                           {"state_county": "state"}, axis=1)
+            self.all_counties = sorted(
+                list(county_df["state"].dropna().unique()))
+            self.combined = pd.concat([
+                county_df[[
+                    "date", "state", "case_growth_per_100K", "case_growth"
+                ]],
+                state_df[[
+                    "date", "state", "case_growth_per_100K", "case_growth"
+                ]],
+            ]).rename({'case_growth': 'New Cases'}, axis=1)
+
+            self.combined["date"] = pd.to_datetime(self.combined["date"])
+
+    @property
+    def thedata(self):
+        self.reload_data()
+        return self.combined
+
+
+myDataLoader = dataLoader()
 
 app = dash.Dash("covid_dash",
                 url_base_pathname="/dash/covid/",
@@ -45,7 +80,7 @@ controls = dbc.Card(
                          options=[{
                              "label": x,
                              "value": x
-                         } for x in all_states],
+                         } for x in myDataLoader.all_states],
                          value=["Virginia"],
                          multi=True,
                          persistence=True),
@@ -54,7 +89,7 @@ controls = dbc.Card(
                          options=[{
                              "label": x,
                              "value": x
-                         } for x in all_counties],
+                         } for x in myDataLoader.all_counties],
                          value=[],
                          multi=True,
                          persistence=True)
@@ -102,47 +137,6 @@ tabs = dbc.Tabs([
 ])
 
 app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
-
-
-class dataLoader:
-    """Makes sure the data is the most recent, rather than statically load it once."""
-    combined = None
-    lastmt = None
-
-    def __init__(self):
-        pass
-        self.path = "data_cache/us-states.csv"
-
-        self.reload_data()
-
-    def reload_data(self):
-        """checks mod times and loads the data"""
-        if not self.lastmt or stat(self.path).st_mtime > self.lastmt:
-            #we should probably import threading and just have a therad just call this method every 30 min rather than
-            #the Interval stuff I'm doing.
-            self.lastmt = stat(self.path).st_mtime
-            state_df = pd.read_csv("data_cache/us-states.csv")
-            county_df = pd.read_csv("data_cache/us-counties.csv")
-            county_df = county_df.drop("state", axis=1).rename(
-                {"state_county": "state"}, axis=1)
-            self.combined = pd.concat([
-                county_df[[
-                    "date", "state", "case_growth_per_100K", "case_growth"
-                ]],
-                state_df[[
-                    "date", "state", "case_growth_per_100K", "case_growth"
-                ]],
-            ]).rename({'case_growth': 'New Cases'}, axis=1)
-
-            self.combined["date"] = pd.to_datetime(self.combined["date"])
-
-    @property
-    def thedata(self):
-        self.reload_data()
-        return self.combined
-
-
-myDataLoader = dataLoader()
 
 
 @app.callback(
