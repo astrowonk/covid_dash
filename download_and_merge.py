@@ -16,7 +16,7 @@ def get_county_data():
         'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
     )
 
-    the_county_data['date'] = pd.to_datetime(the_county_data['date'])
+    #the_county_data['date'] = pd.to_datetime(the_county_data['date'])
     the_county_data.sort_values('date', inplace=True)
     # the_county_data['case_growth'] = the_county_data.groupby(
     #     ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
@@ -96,18 +96,21 @@ def upload_county_to_sql():
     county_data = get_county_data()
 
     print('perfoming operations on county dataframe')
-    county_data['date'] = county_data['date'].apply(
-        lambda x: x.strftime('%Y-%m-%d'))
-    county_data['state'] = county_data['county'] + ', ' + county_data['state']
+    # county_data['date_str'] = county_data['date'].apply(
+    #     lambda x: x.strftime('%Y-%m-%d'))
+    county_data[
+        'county_state'] = county_data['county'] + ', ' + county_data['state']
     gc.collect()
     print("Writing to sql counties")
-    county_data.to_sql('counties',
-                       dbc,
-                       if_exists='replace',
-                       dtype=dytpe_dict,
-                       index=False,
-                       chunksize=5000,
-                       method='multi')
+    county_data.drop('state').rename(columns={
+        'county_state': 'state'
+    }).to_sql('counties',
+              dbc,
+              if_exists='replace',
+              dtype=dytpe_dict,
+              index=False,
+              chunksize=5000,
+              method='multi')
 
 
 if __name__ == '__main__':
