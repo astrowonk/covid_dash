@@ -101,9 +101,9 @@ def upload_county_to_sql():
     county_data['state'] = county_data['county'] + ', ' + county_data['state']
     gc.collect()
     print("Writing to sql counties")
-    county_data.drop(['state'], axis=1).to_csv('data_cache/temp.csv',
-                                               chunksize=2000,
-                                               index=False)
+    county_data.drop(['county'], axis=1).to_csv('data_cache/temp.csv',
+                                                chunksize=2000,
+                                                index=False)
 
 
 if __name__ == '__main__':
