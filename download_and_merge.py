@@ -105,13 +105,7 @@ def upload_county_to_sql():
     county_data.drop('state', axis=1,
                      errors='ignore').rename(columns={
                          'county_state': 'state'
-                     }).to_sql('counties',
-                               dbc,
-                               if_exists='replace',
-                               dtype=dytpe_dict,
-                               index=False,
-                               chunksize=2500,
-                               method='multi')
+                     }).to_csv('temp.csv')
 
 
 if __name__ == '__main__':
