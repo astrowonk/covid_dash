@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output
 from numpy.core.numeric import roll
 import plotly.express as px
 import pandas as pd
+from sqlalchemy.engine import create_engine
 from md_text import about_text, markdown_text
 
 # state_df['date'] = pd.to_datetime(state_df['date'])
@@ -19,41 +20,37 @@ class dataLoader:
     lastmt = None
 
     def __init__(self):
-        self.path = "data_cache/us-states.csv"
 
-        self.reload_data()
+        self.dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 
-    def reload_data(self):
-        """checks mod times and loads the data"""
-        if not self.lastmt or stat(self.path).st_mtime > self.lastmt:
-            #we should probably import threading and just have a therad just call this method every 30 min rather than
-            #the Interval stuff I'm doing.
-            self.lastmt = stat(self.path).st_mtime
-            state_df = pd.read_csv("data_cache/us-states.csv")
+    def get_data(self, state_list):
+        """get the data from the sql tables"""
+        binding_string = ','.join(['?'] * len(state_list))
+        # maybe I should have one table with an id row for state vs county
+        data = pd.read_sql(
+            f"select * from states where state in ({binding_string}) union all select * from counties where state in ({binding_string});",
+            self.dbc,
+            params=state_list * 2)
 
-            self.all_states = sorted(list(state_df.state.unique()))
-            county_df = pd.read_csv("data_cache/us-counties.csv")
-
-            county_df = county_df.drop("state", axis=1,
-                                       errors='ignore').rename(
-                                           {"state_county": "state"}, axis=1)
-            self.all_counties = sorted(
-                list(county_df["state"].dropna().unique()))
-            self.combined = pd.concat([
-                county_df[[
-                    "date", "state", "case_growth_per_100K", "case_growth"
-                ]],
-                state_df[[
-                    "date", "state", "case_growth_per_100K", "case_growth"
-                ]],
-            ]).rename({'case_growth': 'New Cases'}, axis=1)
-
-            self.combined["date"] = pd.to_datetime(self.combined["date"])
+        data['date'] = pd.to_datetime(data['date'])
+        return data.rename({'case_growth': 'New Cases'}, axis=1)
 
     @property
     def thedata(self):
         self.reload_data()
         return self.combined
+
+    @property
+    def all_states(self):
+        return list(
+            pd.read_sql('select distinct state from states',
+                        con=self.dbc)['state'])
+
+    @property
+    def all_counties(self):
+        return list(
+            pd.read_sql('select distinct state from counties',
+                        con=self.dbc)['state'])
 
 
 myDataLoader = dataLoader()
@@ -151,9 +148,8 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
 def update_line_chart(states, counties, rolling_days, n_intervals):
     states_and_counties = states + counties
     print(states_and_counties)
-    dff = (myDataLoader.thedata.query(
-        "state in @states_and_counties").sort_values(["date",
-                                                      "state"]).reset_index())
+    dff = myDataLoader.get_data(states_and_counties).sort_values(
+        ["date", "state"]).reset_index()
     # update : still dumb, transform is better than what I had before but why there isn't a clean handoff
     # between rolling groupby and transform I don't know
     dff["rolling_case_growth_per_100K"] = dff.groupby(

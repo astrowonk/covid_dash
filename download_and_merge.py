@@ -1,20 +1,20 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, types, TEXT
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 
 
 def get_county_data():
-    county_data = pd.read_csv(
+    the_county_data = pd.read_csv(
         'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
     )
 
-    county_data['date'] = pd.to_datetime(county_data['date'])
-    county_data.sort_values('date', inplace=True)
-    county_data['case_growth'] = county_data.groupby(
-        ['county', 'state'])['cases'].shift(0) - county_data.groupby(
+    the_county_data['date'] = pd.to_datetime(the_county_data['date'])
+    the_county_data.sort_values('date', inplace=True)
+    the_county_data['case_growth'] = the_county_data.groupby(
+        ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
             ['county', 'state'])['cases'].shift(1)
-    return county_data
+    return the_county_data
 
 
 def merge_county_pop(county_data, pop_data):
@@ -28,7 +28,7 @@ def merge_county_pop(county_data, pop_data):
         'population']
     return res.rename(columns={
         'state_county': 'state'
-    }).drop(columns=['population'], errors='ignore')
+    }).drop(columns=['population', 'fips'], errors='ignore')
 
 
 def get_state_nyt(pop_data):
@@ -64,26 +64,23 @@ if __name__ == '__main__':
     county_data = merge_county_pop(county_data, pop_data_county)
     county_data['date'] = county_data['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))
+    dytpe_dict = {
+        'date': types.TEXT,
+        'fips': types.TEXT,
+        'case_growth': types.INTEGER,
+        'state': types.TEXT,
+        'case_growth_per_100K': types.REAL
+    }
     county_data.to_sql('counties',
                        dbc,
                        if_exists='replace',
-                       dtype={
-                           'date': 'TEXT',
-                           'fips': 'TEXT',
-                           'case_growth': 'INTEGER',
-                           'state': 'TEXT',
-                           'case_growth_per_100K': 'REAL'
-                       },
+                       dtype=dytpe_dict,
                        index=False)
     state_nyt.to_sql('states',
                      dbc,
                      if_exists='replace',
-                     dtype={
-                         'date': 'TEXT',
-                         'fips': 'TEXT',
-                         'case_growth': 'INTEGER',
-                         'state': 'TEXT',
-                         'population': 'INTEGER',
-                         'case_growth_per_100K': 'REAL'
-                     },
+                     dtype=dytpe_dict,
                      index=False)
+    with dbc.connect() as con:
+        _ = con.execute('create index idx_state on counties (state);')
+        _ = con.execute('create index idx_county on states (state);')
