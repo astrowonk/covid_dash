@@ -1,4 +1,7 @@
 import pandas as pd
+from sqlalchemy import create_engine
+
+dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 
 
 def get_county_data():
@@ -11,7 +14,7 @@ def get_county_data():
     county_data['case_growth'] = county_data.groupby(
         ['county', 'state'])['cases'].shift(0) - county_data.groupby(
             ['county', 'state'])['cases'].shift(1)
-    return county_data.drop(columns=['deaths', 'cases'])
+    return county_data
 
 
 def merge_county_pop(county_data, pop_data):
@@ -21,10 +24,11 @@ def merge_county_pop(county_data, pop_data):
                        'state_county']].merge(pop_data[['fips', 'population']],
                                               on=['fips'],
                                               how='left')
-    #  res['cases_per_100K'] = 100000 * res['cases'] / res['population']
     res['case_growth_per_100K'] = 100000 * res['case_growth'] / res[
         'population']
-    return res
+    return res.rename(columns={
+        'state_county': 'state'
+    }).drop(columns=['population'], errors='ignore')
 
 
 def get_state_nyt(pop_data):
@@ -47,14 +51,39 @@ def get_state_nyt(pop_data):
         'case_growth'] / state_nyt['POPESTIMATE2019']
 
     return state_nyt.sort_values('date').drop(
-        columns=['name', 'POPESTIMATE2019'], errors='ignore')
+        columns=['NAME', 'name', 'POPESTIMATE2019'], errors='ignore')
 
 
 if __name__ == '__main__':
     county_data = get_county_data()
     pop_data_state = pd.read_csv('SCPRC-EST2019-18+POP-RES.csv')
     state_nyt = get_state_nyt(pop_data=pop_data_state)
+    state_nyt['date'] = state_nyt['date'].apply(
+        lambda x: x.strftime('%Y-%m-%d'))
     pop_data_county = pd.read_csv('2019_county_populations.csv')
     county_data = merge_county_pop(county_data, pop_data_county)
-    county_data.to_csv('data_cache/us-counties.csv', index=False)
-    state_nyt.to_csv('data_cache/us-states.csv', index=False)
+    county_data['date'] = county_data['date'].apply(
+        lambda x: x.strftime('%Y-%m-%d'))
+    county_data.to_sql('counties',
+                       dbc,
+                       if_exists='replace',
+                       dtype={
+                           'date': 'TEXT',
+                           'fips': 'TEXT',
+                           'case_growth': 'INTEGER',
+                           'state': 'TEXT',
+                           'case_growth_per_100K': 'REAL'
+                       },
+                       index=False)
+    state_nyt.to_sql('states',
+                     dbc,
+                     if_exists='replace',
+                     dtype={
+                         'date': 'TEXT',
+                         'fips': 'TEXT',
+                         'case_growth': 'INTEGER',
+                         'state': 'TEXT',
+                         'population': 'INTEGER',
+                         'case_growth_per_100K': 'REAL'
+                     },
+                     index=False)
