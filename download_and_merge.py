@@ -1,7 +1,14 @@
 import pandas as pd
 from sqlalchemy import create_engine, types, TEXT
+import gc
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
+dytpe_dict = {
+    'date': types.TEXT,
+    'fips': types.TEXT,
+    'case_growth': types.INTEGER,
+    'state': types.TEXT,
+}
 
 
 def get_county_data():
@@ -70,32 +77,11 @@ def write_county_sql():
         _ = con.execute('create index idx_fips on county_population (fips);')
 
 
-if __name__ == '__main__':
-    county_data = get_county_data()
+def upload_state_to_sql():
     pop_data_state = pd.read_csv('SCPRC-EST2019-18+POP-RES.csv')
     state_nyt = get_state_nyt(pop_data=pop_data_state)
     state_nyt['date'] = state_nyt['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))
-    #county_data = merge_county_pop(county_data, pop_data_county)
-    county_data['date'] = county_data['date'].apply(
-        lambda x: x.strftime('%Y-%m-%d'))
-    county_data['state'] = county_data['county'] + ', ' + county_data['state']
-    dytpe_dict = {
-        'date': types.TEXT,
-        'fips': types.TEXT,
-        'case_growth': types.INTEGER,
-        'state': types.TEXT,
-    }
-    print("Writing to sql counties")
-    county_data.to_sql('counties',
-                       dbc,
-                       if_exists='replace',
-                       dtype=dytpe_dict,
-                       index=False,
-                       chunksize=10000,
-                       method='multi')
-    print("Writing to sql states")
-
     state_nyt.to_sql('states',
                      dbc,
                      if_exists='replace',
@@ -104,7 +90,34 @@ if __name__ == '__main__':
                      chunksize=10000,
                      method='multi')
 
+
+def upload_county_to_sql():
+    print('loading county data')
+    county_data = get_county_data()
+
+    print('perfoming operations on county dataframe')
+    county_data['date'] = county_data['date'].apply(
+        lambda x: x.strftime('%Y-%m-%d'))
+    county_data['state'] = county_data['county'] + ', ' + county_data['state']
+
+    print("Writing to sql counties")
+    county_data.to_sql('counties',
+                       dbc,
+                       if_exists='replace',
+                       dtype=dytpe_dict,
+                       index=False,
+                       chunksize=5000,
+                       method='multi')
+
+
+if __name__ == '__main__':
+
+    print("Writing to sql states")
+    upload_state_to_sql()
+    gc.collect()
     print("Creating SQL indexes")
+    upload_county_to_sql()
+    gc.collect()
     with dbc.connect() as con:
         _ = con.execute('create index idx_state on counties (state);')
         #     _ = con.execute('create index idx_state on counties (fips);')
