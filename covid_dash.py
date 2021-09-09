@@ -38,8 +38,8 @@ class dataLoader:
         data_counties['date'] = pd.to_datetime(data_counties['date'])
         data_counties.sort_values('date', inplace=True)
         data_counties['case_growth'] = data_counties.groupby(
-            ['county', 'state'])['cases'].shift(0) - data_counties.groupby(
-                ['county', 'state'])['cases'].shift(1)
+            ['state'])['cases'].shift(0) - data_counties.groupby(
+                ['state'])['cases'].shift(1)
         data_counties['case_growth_per_100K'] = 100000 * data_counties[
             'case_growth'] / data_counties['population']
         data = pd.concat([data_states, data_counties])

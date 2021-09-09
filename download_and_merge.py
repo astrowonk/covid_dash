@@ -101,7 +101,9 @@ def upload_county_to_sql():
     county_data['state'] = county_data['county'] + ', ' + county_data['state']
     gc.collect()
     print("Writing to sql counties")
-    county_data.to_csv('temp.csv', chunksize=2500, index=False)
+    county_data.drop(['state'], axis=1).to_csv('data_cache/temp.csv',
+                                               chunksize=2000,
+                                               index=False)
 
 
 if __name__ == '__main__':
@@ -113,6 +115,5 @@ if __name__ == '__main__':
     upload_county_to_sql()
     gc.collect()
     with dbc.connect() as con:
-        _ = con.execute('create index idx_state on counties (state);')
         #     _ = con.execute('create index idx_state on counties (fips);')
         _ = con.execute('create index idx_county on states (state);')
