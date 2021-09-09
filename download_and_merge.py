@@ -91,14 +91,18 @@ if __name__ == '__main__':
                        dbc,
                        if_exists='replace',
                        dtype=dytpe_dict,
-                       index=False)
+                       index=False,
+                       chunksize=10000,
+                       method='multi')
     print("Writing to sql states")
 
     state_nyt.to_sql('states',
                      dbc,
                      if_exists='replace',
                      dtype=dytpe_dict,
-                     index=False)
+                     index=False,
+                     chunksize=10000,
+                     method='multi')
 
     print("Creating SQL indexes")
     with dbc.connect() as con:
