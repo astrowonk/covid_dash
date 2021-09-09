@@ -17,7 +17,7 @@ def get_county_data():
     )
 
     #the_county_data['date'] = pd.to_datetime(the_county_data['date'])
-    the_county_data.sort_values('date', inplace=True)
+    #the_county_data.sort_values('date', inplace=True)
     # the_county_data['case_growth'] = the_county_data.groupby(
     #     ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
     #         ['county', 'state'])['cases'].shift(1)
