@@ -11,9 +11,9 @@ def get_county_data():
 
     the_county_data['date'] = pd.to_datetime(the_county_data['date'])
     the_county_data.sort_values('date', inplace=True)
-    the_county_data['case_growth'] = the_county_data.groupby(
-        ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
-            ['county', 'state'])['cases'].shift(1)
+    # the_county_data['case_growth'] = the_county_data.groupby(
+    #     ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
+    #         ['county', 'state'])['cases'].shift(1)
     return the_county_data
 
 
@@ -54,35 +54,54 @@ def get_state_nyt(pop_data):
         columns=['NAME', 'name', 'POPESTIMATE2019'], errors='ignore')
 
 
+def write_county_sql():
+    pop_data_county = pd.read_csv('2019_county_populations.csv')
+    dytpe_dict = {
+        'date': types.TEXT,
+        'fips': types.TEXT,
+        'cases': types.INTEGER,
+        'state': types.TEXT,
+    }
+    pop_data_county.to_sql('county_population',
+                           dbc,
+                           if_exists='replace',
+                           dtype=dytpe_dict)
+    with dbc.connect() as con:
+        _ = con.execute('create index idx_fips on county_population (fips);')
+
+
 if __name__ == '__main__':
     county_data = get_county_data()
     pop_data_state = pd.read_csv('SCPRC-EST2019-18+POP-RES.csv')
     state_nyt = get_state_nyt(pop_data=pop_data_state)
     state_nyt['date'] = state_nyt['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))
-    pop_data_county = pd.read_csv('2019_county_populations.csv')
-    county_data = merge_county_pop(county_data, pop_data_county)
+    #county_data = merge_county_pop(county_data, pop_data_county)
     county_data['date'] = county_data['date'].apply(
         lambda x: x.strftime('%Y-%m-%d'))
+    county_data['state'] = county_data['county'] + ', ' + county_data['state']
     dytpe_dict = {
         'date': types.TEXT,
         'fips': types.TEXT,
         'case_growth': types.INTEGER,
         'state': types.TEXT,
-        'case_growth_per_100K': types.REAL
     }
-    print("Writing to sql")
+    print("Writing to sql counties")
     county_data.to_sql('counties',
                        dbc,
                        if_exists='replace',
                        dtype=dytpe_dict,
                        index=False)
+    print("Writing to sql states")
+
     state_nyt.to_sql('states',
                      dbc,
                      if_exists='replace',
                      dtype=dytpe_dict,
                      index=False)
+
     print("Creating SQL indexes")
     with dbc.connect() as con:
         _ = con.execute('create index idx_state on counties (state);')
+        #     _ = con.execute('create index idx_state on counties (fips);')
         _ = con.execute('create index idx_county on states (state);')
