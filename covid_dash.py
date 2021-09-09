@@ -35,22 +35,17 @@ class dataLoader:
         data['date'] = pd.to_datetime(data['date'])
         return data.rename({'case_growth': 'New Cases'}, axis=1)
 
-    @property
-    def thedata(self):
-        self.reload_data()
-        return self.combined
-
-    @property
     def all_states(self):
-        return list(
-            pd.read_sql('select distinct state from states',
-                        con=self.dbc)['state'])
+        return sorted(
+            list(
+                pd.read_sql('select distinct state from states',
+                            con=self.dbc)['state']))
 
-    @property
     def all_counties(self):
-        return list(
-            pd.read_sql('select distinct state from counties',
-                        con=self.dbc)['state'])
+        return sorted(
+            list(
+                pd.read_sql('select distinct state from counties',
+                            con=self.dbc)['state']))
 
 
 myDataLoader = dataLoader()
@@ -77,7 +72,7 @@ controls = dbc.Card(
                          options=[{
                              "label": x,
                              "value": x
-                         } for x in myDataLoader.all_states],
+                         } for x in myDataLoader.all_states()],
                          value=["Virginia"],
                          multi=True,
                          persistence=True),
@@ -86,7 +81,7 @@ controls = dbc.Card(
                          options=[{
                              "label": x,
                              "value": x
-                         } for x in myDataLoader.all_counties],
+                         } for x in myDataLoader.all_counties()],
                          value=[],
                          multi=True,
                          persistence=True)
