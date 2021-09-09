@@ -2,10 +2,11 @@ drop table if exists counties;
 
 CREATE TABLE counties (
 	date TEXT,
-	fips TEXT,
+	state TEXT,
+	fips BIGINT,
 	cases BIGINT,
-	deaths FLOAT,
-	state TEXT
+	deaths BIGINT
+
 );
 .mode csv
 .import data_cache/temp.csv counties
