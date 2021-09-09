@@ -71,6 +71,7 @@ if __name__ == '__main__':
         'state': types.TEXT,
         'case_growth_per_100K': types.REAL
     }
+    print("Writing to sql")
     county_data.to_sql('counties',
                        dbc,
                        if_exists='replace',
@@ -81,6 +82,7 @@ if __name__ == '__main__':
                      if_exists='replace',
                      dtype=dytpe_dict,
                      index=False)
+    print("Creating SQL indexes")
     with dbc.connect() as con:
         _ = con.execute('create index idx_state on counties (state);')
         _ = con.execute('create index idx_county on states (state);')
