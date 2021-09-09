@@ -155,14 +155,14 @@ def update_line_chart(states, counties, rolling_days, n_intervals):
         "state in @states_and_counties").sort_values(["date",
                                                       "state"]).reset_index())
     # this rolling 7 day thing was truly tedious but I guess time + 7D makes more sense than just integer rolling.
-    dff["rolling_case_growth_per_100K"] = (dff.groupby("state")[[
-        "case_growth_per_100K", "date"
-    ]].rolling(f"{rolling_days}D",
-               on="date").mean().reset_index()["case_growth_per_100K"])
-    dff["rolling_new_cases"] = (dff.groupby("state")[[
-        "New Cases", "date"
-    ]].rolling(f"{rolling_days}D",
-               on="date").mean().reset_index()["New Cases"])
+    dff["rolling_case_growth_per_100K"] = dff.groupby('state').rolling(
+        f"{rolling_days}D",
+        on="date")['case_growth_per_100K'].mean().reset_index().sort_values(
+            ['date', 'state']).reset_index(drop=True)['case_growth_per_100K']
+    dff["rolling_new_cases"] = dff.groupby('state').rolling(
+        f"{rolling_days}D",
+        on="date")['New Cases'].mean().reset_index().sort_values(
+            ['date', 'state']).reset_index(drop=True)['New Cases']
     fig = px.line(dff,
                   x="date",
                   y="rolling_case_growth_per_100K",
