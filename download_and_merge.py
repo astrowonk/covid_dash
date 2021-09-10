@@ -100,7 +100,9 @@ def upload_county_to_sql():
     #     lambda x: x.strftime('%Y-%m-%d'))
     county_data['state'] = county_data['county'] + ', ' + county_data['state']
     gc.collect()
-    print("Writing to sql counties")
+    print("Writing to csv counties")
+    # using sql_alchemy was both slow and memory intensive. Faster to just use csv as an intermediate step
+    # I may retry with the built in sqlite library at some point.
     county_data.drop(['county'], axis=1).to_csv('data_cache/temp.csv',
                                                 chunksize=2000,
                                                 index=False)
