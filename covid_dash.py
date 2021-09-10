@@ -23,18 +23,22 @@ class dataLoader:
 
     def get_data(self, state_list):
         """get the data from the sql tables"""
-        binding_string = ','.join(['?'] * len(state_list))
         # maybe I should have one table with an id row for state vs county
+        county_list = [x for x in state_list if ',' in x]
+        state_list = [x for x in state_list if ',' not in x]
+        binding_string = ','.join(['?'] * len(state_list))
+
         data_states = pd.read_sql(
             f"select * from states where state in ({binding_string})",
             self.dbc,
             params=state_list)
         data_states['date'] = pd.to_datetime(data_states['date'])
+        binding_string = ','.join(['?'] * len(county_list))
 
         data_counties = pd.read_sql(
             f'select c.*, p.population from counties c left join county_population p on c.fips = p.fips where c.state in ({binding_string});',
             con=self.dbc,
-            params=state_list)
+            params=county_list)
         data_counties['date'] = pd.to_datetime(data_counties['date'])
         data_counties.sort_values('date', inplace=True)
         data_counties['case_growth'] = data_counties.groupby(
