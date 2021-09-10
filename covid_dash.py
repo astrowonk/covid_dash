@@ -72,7 +72,6 @@ app = dash.Dash("covid_dash",
                     },
                 ])
 server = app.server
-INTERVAL_MINUTES = 5
 STYLE = {"marginBottom": 20, "marginTop": 20}
 
 controls = dbc.Card(
@@ -107,10 +106,7 @@ controls = dbc.Card(
                 value=7,
                 marks={x: f"{x}"
                        for x in range(15)},
-            ),
-            dcc.Interval(id='interval',
-                         interval=1000 * 60 * INTERVAL_MINUTES,
-                         n_intervals=0)
+            )
         ]),
     ],
     body=True,
@@ -148,10 +144,9 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
         Input("states", "value"),
         Input('counties', 'value'),
         Input("rolling_days", "value"),
-        Input("interval", "n_intervals")
     ],
 )
-def update_line_chart(states, counties, rolling_days, n_intervals):
+def update_line_chart(states, counties, rolling_days):
     states_and_counties = states + counties
     print(states_and_counties)
     dff = myDataLoader.get_data(states_and_counties).sort_values(
