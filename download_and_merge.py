@@ -15,6 +15,7 @@ dytpe_dict = {
 
 def load_and_rewrite_county_csv():
     """Memory saving line by line csv load and concatenate county and state"""
+    print("Writing new csv file")
     with open('data_cache/temp.csv', 'w', newline='') as csvfile:
         fieldnames = ['date', 'state', 'fips', 'cases', 'deaths']
         mywriter = csv.writer(csvfile,
@@ -49,6 +50,7 @@ def merge_county_pop(county_data, pop_data):
 
 
 def get_state_nyt(pop_data):
+    """Considerably smaller data file so merging and pre-computing some data before uploading to sqlite db is practical"""
     state_nyt = pd.read_csv(
         'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv'
     ).drop(columns=['deaths', 'fips'])
@@ -88,6 +90,7 @@ def write_county_sql():
 
 
 def upload_state_to_sql():
+    """Load state data and upload to sql"""
     pop_data_state = pd.read_csv('SCPRC-EST2019-18+POP-RES.csv')
     state_nyt = get_state_nyt(pop_data=pop_data_state)
     state_nyt['date'] = state_nyt['date'].apply(
@@ -107,10 +110,10 @@ if __name__ == '__main__':
     upload_state_to_sql()
     gc.collect()
     print("Creating SQL indexes")
-    # us-counties.csv must be downloaded first
+    # us-counties.csv must be downloaded first in shell script
     load_and_rewrite_county_csv()
 
     gc.collect()
     with dbc.connect() as con:
-        #     _ = con.execute('create index idx_state on counties (fips);')
+        #     the index for counties will be made in the .sql script after loading from csv
         _ = con.execute('create index idx_county on states (state);')
