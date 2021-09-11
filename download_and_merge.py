@@ -1,6 +1,8 @@
 import pandas as pd
 from sqlalchemy import create_engine, types, TEXT
 import gc
+from tqdm import tqdm
+import csv
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 dytpe_dict = {
@@ -11,17 +13,25 @@ dytpe_dict = {
 }
 
 
-def get_county_data():
-    the_county_data = pd.read_csv(
-        'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
-    )
+def load_and_rewrite_county_csv():
+    """Memory saving line by line csv load and concatenate county and state"""
+    with open('data_cache/temp.csv', 'w', newline='') as csvfile:
+        fieldnames = ['date', 'state', 'fips', 'cases', 'deaths']
+        mywriter = csv.writer(csvfile,
+                              delimiter=',',
+                              quotechar='"',
+                              quoting=csv.QUOTE_MINIMAL)
+        mywriter.writerow(fieldnames)
 
-    #the_county_data['date'] = pd.to_datetime(the_county_data['date'])
-    #the_county_data.sort_values('date', inplace=True)
-    # the_county_data['case_growth'] = the_county_data.groupby(
-    #     ['county', 'state'])['cases'].shift(0) - the_county_data.groupby(
-    #         ['county', 'state'])['cases'].shift(1)
-    return the_county_data
+        with open('data_cache/us-counties.csv') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            header = next(reader)
+            print(header)
+            for row in tqdm(reader):
+
+                new_entry = [row[1] + ', ' + row[2]]
+                new_row = row[:1] + new_entry + row[3:]
+                mywriter.writerow(new_row)
 
 
 def merge_county_pop(county_data, pop_data):
@@ -91,30 +101,15 @@ def upload_state_to_sql():
                      method='multi')
 
 
-def upload_county_to_sql():
-    print('loading county data')
-    county_data = get_county_data()
-
-    print('perfoming operations on county dataframe')
-    # county_data['date_str'] = county_data['date'].apply(
-    #     lambda x: x.strftime('%Y-%m-%d'))
-    county_data['state'] = county_data['county'] + ', ' + county_data['state']
-    gc.collect()
-    print("Writing to csv counties")
-    # using sql_alchemy was both slow and memory intensive. Faster to just use csv as an intermediate step
-    # I may retry with the built in sqlite library at some point.
-    county_data.drop(['county'], axis=1).to_csv('data_cache/temp.csv',
-                                                chunksize=2000,
-                                                index=False)
-
-
 if __name__ == '__main__':
 
     print("Writing to sql states")
     upload_state_to_sql()
     gc.collect()
     print("Creating SQL indexes")
-    upload_county_to_sql()
+    # us-counties.csv must be downloaded first
+    load_and_rewrite_county_csv()
+
     gc.collect()
     with dbc.connect() as con:
         #     _ = con.execute('create index idx_state on counties (fips);')
