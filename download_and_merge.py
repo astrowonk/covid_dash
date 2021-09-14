@@ -127,9 +127,6 @@ def upload_state_to_sql():
 
 if __name__ == '__main__':
 
-    gc.collect()
-    # us-counties.csv must be downloaded first in shell script
-
     if check_for_new_download():
         print("Writing to sql states")
 
