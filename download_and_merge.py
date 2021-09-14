@@ -25,7 +25,7 @@ def check_for_new_download():
     commits = repo.get_commits(path='us-counties.csv')
     gh_mod_time = commits[0].commit.committer.date
     file_mod_time = datetime.fromtimestamp(
-        getmtime('data_cache/us-counties.csv'))
+        getmtime('data_cache/covid_dash.db'))
     print(gh_mod_time, file_mod_time)
     return gh_mod_time > file_mod_time
 
