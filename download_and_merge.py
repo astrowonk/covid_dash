@@ -127,12 +127,12 @@ def upload_state_to_sql():
 
 if __name__ == '__main__':
 
-    print("Writing to sql states")
     gc.collect()
-    print("Creating SQL indexes")
     # us-counties.csv must be downloaded first in shell script
 
     if check_for_new_download():
+        print("Writing to sql states")
+
         upload_state_to_sql()
 
         load_and_rewrite_county_csv()
@@ -147,3 +147,5 @@ if __name__ == '__main__':
             'sqlite3', 'data_cache/covid_dash.db',
             '.read county_processing.sql'
         ])
+    else:
+        print("No new data in github to process")
