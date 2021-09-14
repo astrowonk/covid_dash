@@ -3,6 +3,11 @@ from sqlalchemy import create_engine, types, TEXT
 import gc
 from tqdm import tqdm
 import csv
+from urllib.request import urlretrieve
+from github import Github
+from datetime import datetime
+from os.path import getmtime
+import subprocess
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 dytpe_dict = {
@@ -13,9 +18,25 @@ dytpe_dict = {
 }
 
 
+def check_for_new_download():
+    """Check if github mod time is later than downloaded file modtime and return True if it needs to be dowloaded again."""
+    gh = Github()
+    repo = gh.get_repo('nytimes/covid-19-data')
+    commits = repo.get_commits(path='us-counties.csv')
+    gh_mod_time = commits[0].commit.committer.date
+    file_mod_time = datetime.fromtimestamp(
+        getmtime('data_cache/us-counties.csv'))
+    print(gh_mod_time, file_mod_time)
+    return gh_mod_time > file_mod_time
+
+
 def load_and_rewrite_county_csv():
     """Memory saving line by line csv load and concatenate county and state"""
     print("Writing new csv file")
+    urlretrieve(
+        'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv',
+        filename='data_cache/us-counties.csv')
+
     with open('data_cache/temp.csv', 'w', newline='') as csvfile:
         fieldnames = ['date', 'state', 'fips', 'cases', 'deaths']
         mywriter = csv.writer(csvfile,
@@ -107,13 +128,20 @@ def upload_state_to_sql():
 if __name__ == '__main__':
 
     print("Writing to sql states")
-    upload_state_to_sql()
     gc.collect()
     print("Creating SQL indexes")
     # us-counties.csv must be downloaded first in shell script
-    load_and_rewrite_county_csv()
+
+    if check_for_new_download():
+        upload_state_to_sql()
+
+        load_and_rewrite_county_csv()
 
     gc.collect()
     with dbc.connect() as con:
-        #     the index for counties will be made in the .sql script after loading from csv
+        print("Making State Indexes")
         _ = con.execute('create index idx_county on states (state);')
+
+    print('running .sql script to read temp csv')
+    subprocess.run(
+        ['sqlite3', 'data_cache/covid_dash.db', '.read county_processing.sql'])
