@@ -137,11 +137,13 @@ if __name__ == '__main__':
 
         load_and_rewrite_county_csv()
 
-    gc.collect()
-    with dbc.connect() as con:
-        print("Making State Indexes")
-        _ = con.execute('create index idx_county on states (state);')
+        gc.collect()
+        with dbc.connect() as con:
+            print("Making State Indexes")
+            _ = con.execute('create index idx_county on states (state);')
 
-    print('running .sql script to read temp csv')
-    subprocess.run(
-        ['sqlite3', 'data_cache/covid_dash.db', '.read county_processing.sql'])
+        print('running .sql script to read temp csv')
+        subprocess.run([
+            'sqlite3', 'data_cache/covid_dash.db',
+            '.read county_processing.sql'
+        ])
