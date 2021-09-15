@@ -26,7 +26,8 @@ def check_for_new_download():
     gh_mod_time = commits[0].commit.committer.date
     file_mod_time = datetime.fromtimestamp(
         getmtime('data_cache/covid_dash.db'))
-    print(gh_mod_time, file_mod_time)
+    print(
+        f"Github Last commit {gh_mod_time}, Database mod time {file_mod_time}")
     return gh_mod_time > file_mod_time
 
 
