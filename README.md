@@ -1,10 +1,13 @@
 # Covid-19 Per Capita New Case in Dash
 [Dash](https://dash.plotly.com) app showing Covid new cases by state/county.
 
-This app implements per-capita normalized plots of linear case growth of Covid-19, using data from the [New York Times](https://github.com/nytimes/covid-19-data).
+This app implements per-capita normalized plots of linear case growth of Covid-19, using data from the [New York Times](https://github.com/nytimes/covid-19-data). It is running [live on my personal web site]((https://marcoshuerta.com/dash/covid/).
 
-The R scripts were not properly writing out the csv files that the dash app needs (possibly encountering memory issues) so I have rewritten the downloaded and merge scripts with python/pandas in `download_and_merge.py`. 
+However it is running on a very small [Digital Ocean droplet](https://m.do.co/c/6e16d6da6cf4), so reducing memory usage has proven important.
 
-The pandas merges to create the csv files were memory intensive, as was loading the entire county data set into memory. Recent updates have moved everything into a sqlite database. The county population is merged in via sql and only on a small subset of the data. This reduces the memory usage of the cron job that updates the data twice a day, and of the dash app itself.
+The `download_and_merge.py` script checks for the most recent commit time of the data in the NY Times repository, then download and process the files. The repository is checked hourly. The state data file is relatively small, so it is processed with pandas and all the population data merged at once, before uploading to sqlite3 with sql alchemy.
 
-Thus the [Covid new cases dashboard running live at my web site](https://marcoshuerta.com/dash/covid/) that runs this code uses less memory and I think has overall better performance.
+The county data is much larger, and the merges more memory instensive. So, the county population is merged only at runtime with sql, so it's only on a small subset of the data being plotted. This reduces the memory usage of the cron job that updates the database. I do some light processing on the raw csv file line by line in python, then use `sqlite3` command line utility to efficiently load the csv file into the sqlite database with `county_processing.sql`. This is much faster than pandas + sql alchemy, uses less memory, and less cpu.
+
+
+

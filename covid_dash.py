@@ -152,7 +152,9 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
 )
 def update_line_chart(states, counties, rolling_days):
     states_and_counties = states + counties
-    print(states_and_counties)
+    if len(states_and_counties) > 15:
+        #quietly limiting the length of the list to 15
+        states_and_counties = states_and_counties[:15]
     dff = myDataLoader.get_data(states_and_counties).sort_values(
         ["date", "state"]).reset_index()
     # update : still dumb, transform is better than what I had before but why there isn't a clean handoff
