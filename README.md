@@ -7,7 +7,7 @@ However it is running on a very small [Digital Ocean droplet](https://m.do.co/c/
 
 The `download_and_merge.py` script checks for the most recent commit time of the data in the NY Times repository, then download and process the files. The repository is checked hourly. The state data file is relatively small, so it is processed with pandas and all the population data merged at once, before uploading to sqlite3 with sql alchemy.
 
-The county data is much larger, and the merges more memory instensive. So, the county population is merged only at runtime with sql, so it's only on a small subset of the data being plotted. This reduces the memory usage of the cron job that updates the database. I do some light processing on the raw csv file line by line in python, then use `sqlite3` command line utility to efficiently load the csv file into the sqlite database with `county_processing.sql`. This is much faster than pandas + sql alchemy, uses less memory, and less cpu.
+The county data is much larger, and the merges more memory instensive, at least on relative to the memory on my virtual server. So, the county population is merged only at runtime with sql, so it's only on a small subset of the data being plotted. This reduces the memory usage of the cron job that updates the database. I do some light processing on the raw csv file line by line in python, then use `sqlite3` command line utility to efficiently load the csv file into the sqlite database with `county_processing.sql`. This is much faster than pandas + sql alchemy, uses less memory, and less cpu.
 
 
 

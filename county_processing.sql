@@ -3,9 +3,9 @@ drop table if exists counties;
 CREATE TABLE counties (
 	date TEXT,
 	state TEXT,
-	fips BIGINT,
-	cases BIGINT,
-	deaths BIGINT
+	fips INTEGER,
+	cases INTEGER,
+	deaths INTEGER
 
 );
 .mode csv
