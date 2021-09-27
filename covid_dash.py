@@ -46,9 +46,19 @@ class dataLoader:
                 ['state'])['cases'].shift(1)
         data_counties['case_growth_per_100K'] = 100000 * data_counties[
             'case_growth'] / data_counties['population']
+        # handle data on deaths
+        data_counties['new_deaths'] = data_counties.groupby(
+            ['state'])['deaths'].shift(0) - data_counties.groupby(
+                ['state'])['deaths'].shift(1)
+        data_counties['new_deaths_per_100K'] = 100000 * data_counties[
+            'new_deaths'] / data_counties['population']
         data = pd.concat([data_states, data_counties])
         data['date'] = pd.to_datetime(data['date'])
-        return data.rename({'case_growth': 'New Cases'}, axis=1)
+        return data.rename(
+            {
+                'case_growth': 'New Cases',
+                'new_deaths': 'New Deaths'
+            }, axis=1)
 
     def all_states(self):
         return sorted(
@@ -81,6 +91,15 @@ STYLE = {"marginBottom": 20, "marginTop": 20}
 controls = dbc.Card(
     [
         dbc.FormGroup([
+            html.Label("Choose Data Type"),
+            dcc.Dropdown(id='data-type',
+                         options=[{
+                             'label': x,
+                             'value': x
+                         } for x in ['Cases', 'Deaths']],
+                         value='Cases',
+                         persistence=True,
+                         clearable=False),
             html.Label("Choose States"),
             dcc.Dropdown(id="states",
                          options=[{
@@ -148,10 +167,17 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
         Input("states", "value"),
         Input('counties', 'value'),
         Input("rolling_days", "value"),
+        Input("data-type", "value"),
     ],
 )
-def update_line_chart(states, counties, rolling_days):
+def update_line_chart(states, counties, rolling_days, data_type):
     states_and_counties = states + counties
+    if data_type == 'Cases':
+        y_axis_label = "New Reported Cases Per 100,000"
+        y_variable = 'rolling_case_growth_per_100K'
+    else:
+        y_axis_label = "New Reported Deaths Per 100,000"
+        y_variable = 'rolling_new_deaths_per_100K'
     if len(states_and_counties) > 15:
         #quietly limiting the length of the list to 15
         states_and_counties = states_and_counties[:15]
@@ -164,14 +190,18 @@ def update_line_chart(states, counties, rolling_days):
             lambda s: s.rolling(rolling_days, min_periods=1).mean())
     dff["rolling_new_cases"] = dff.groupby('state')['New Cases'].transform(
         lambda s: s.rolling(rolling_days, min_periods=1).mean())
+    dff["rolling_new_deaths_per_100K"] = dff.groupby(
+        'state')['new_deaths_per_100K'].transform(
+            lambda s: s.rolling(rolling_days, min_periods=1).mean())
     fig = px.line(dff,
                   x="date",
-                  y="rolling_case_growth_per_100K",
+                  y=y_variable,
                   color="state",
                   hover_data=[
                       'date', 'rolling_new_cases',
                       'rolling_case_growth_per_100K', 'New Cases',
-                      'case_growth_per_100K'
+                      'case_growth_per_100K', 'rolling_new_deaths_per_100K',
+                      'new_deaths_per_100K'
                   ],
                   labels={'state': ''})
 
@@ -187,7 +217,7 @@ def update_line_chart(states, counties, rolling_days):
                                   xanchor="left",
                                   x=0.01),
                       xaxis_title=None,
-                      yaxis_title="New Reported Cases Per 100,000",
+                      yaxis_title=y_axis_label,
                       autosize=True,
                       font=dict(size=12))
     fig.update_yaxes(automargin=True)

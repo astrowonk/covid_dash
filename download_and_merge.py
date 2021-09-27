@@ -84,11 +84,12 @@ def get_state_nyt(pop_data):
     state_nyt['new_deaths'] = state_nyt.groupby([
         'state'
     ])['deaths'].shift(0) - state_nyt.groupby(['state'])['deaths'].shift(1)
-    state_nyt = state_nyt[['date', 'case_growth', 'state', 'new_deaths'
-                           ]].merge(pop_data[['POPESTIMATE2019', 'NAME']],
-                                    left_on='state',
-                                    right_on='NAME',
-                                    how='left')
+    state_nyt = state_nyt[[
+        'date', 'case_growth', 'state', 'new_deaths', 'deaths', 'cases'
+    ]].merge(pop_data[['POPESTIMATE2019', 'NAME']],
+             left_on='state',
+             right_on='NAME',
+             how='left')
 
     state_nyt['case_growth_per_100K'] = 100000 * state_nyt[
         'case_growth'] / state_nyt['POPESTIMATE2019']
