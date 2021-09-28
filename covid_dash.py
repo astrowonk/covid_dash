@@ -41,6 +41,9 @@ class dataLoader:
         binding_string = ','.join(['?'] * len(county_list))
         if cases:
             data_counties = pd.read_sql(
+                f"select state,cases, date from counties where c.state in ({binding_string})"
+            ).merge(pd.read_sql(), on='fips', how='left')
+            data_counties = pd.read_sql(
                 f'select c.date, c.state,c.cases, p.population from counties c left join county_population p on c.fips = p.fips where c.state in ({binding_string});',
                 con=self.dbc,
                 params=county_list)
@@ -184,7 +187,6 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
         Input('counties', 'value'),
         Input("rolling_days", "value"),
         Input("data-type", "value"),
-        State("line-chart", "figure"),
     ],
 )
 def update_line_chart(states, counties, rolling_days, data_type,
