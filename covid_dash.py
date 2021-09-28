@@ -152,7 +152,11 @@ main_tab_content = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(controls, md=4),
-                dbc.Col(dcc.Graph(id="line-chart"), md=8),
+                dbc.Col(dbc.Spinner(
+                    [
+                        dcc.Graph(id="line-chart"),
+                    ], debounce=100, color='info'),
+                        md=8),
             ],
             align="center",
         ),
