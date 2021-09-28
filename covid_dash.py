@@ -41,12 +41,16 @@ class dataLoader:
         binding_string = ','.join(['?'] * len(county_list))
         if cases:
             data_counties = pd.read_sql(
-                f"select state,cases, date from counties where c.state in ({binding_string})"
-            ).merge(pd.read_sql(), on='fips', how='left')
-            data_counties = pd.read_sql(
-                f'select c.date, c.state,c.cases, p.population from counties c left join county_population p on c.fips = p.fips where c.state in ({binding_string});',
+                f"select c.cases,c.state, c.date,c.fips  from counties c where c.state in ({binding_string});",
                 con=self.dbc,
-                params=county_list)
+                params=county_list
+            ).merge(pd.read_sql(
+                f"select fips, population from county_population where state in (({binding_string})",
+                con=self.dbc,
+                params=county_list),
+                    on=['fips'],
+                    how='left')
+
             data_counties['date'] = pd.to_datetime(data_counties['date'])
             data_counties.sort_values('date', inplace=True)
             data_counties['case_growth'] = data_counties.groupby(
