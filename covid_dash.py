@@ -45,7 +45,7 @@ class dataLoader:
                 con=self.dbc,
                 params=county_list
             ).merge(pd.read_sql(
-                f"select fips, population from county_population where state in (({binding_string})",
+                f"select fips, population from county_population where state in ({binding_string})",
                 con=self.dbc,
                 params=county_list),
                     on=['fips'],
