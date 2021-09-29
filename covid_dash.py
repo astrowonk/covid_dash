@@ -40,16 +40,21 @@ class dataLoader:
         data_states['date'] = pd.to_datetime(data_states['date'])
         binding_string = ','.join(['?'] * len(county_list))
         if cases:
-            data_counties = pd.read_sql(
+
+            data_county = pd.read_sql(
                 f"select c.cases,c.state, c.date,c.fips  from counties c where c.state in ({binding_string});",
                 con=self.dbc,
-                params=county_list
-            ).merge(pd.read_sql(
+                params=county_list)
+            data_county['fips'] = data_county['fips'].astype(int)
+            data_population = pd.read_sql(
                 f"select fips, population from county_population where state in ({binding_string})",
                 con=self.dbc,
-                params=county_list),
-                    on=['fips'],
-                    how='left')
+                params=county_list)
+            data_population['fips'] = data_population['fips'].astype(int)
+            data_counties = pd.merge(data_county,
+                                     data_population,
+                                     on='fips',
+                                     how='left')
 
             data_counties['date'] = pd.to_datetime(data_counties['date'])
             data_counties.sort_values('date', inplace=True)
