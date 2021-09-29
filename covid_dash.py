@@ -41,7 +41,7 @@ class dataLoader:
         binding_string = ','.join(['?'] * len(county_list))
         if cases:
             data_counties = pd.read_sql(
-                f'select c.date, c.state,c.cases, p.population from counties c left join county_population p on c.fips = p.fips where c.state in ({binding_string});',
+                f'select c.date, c.state,c.cases, c.population from county_enhanced c where c.state in ({binding_string});',
                 con=self.dbc,
                 params=county_list)
             data_counties['date'] = pd.to_datetime(data_counties['date'])
@@ -54,7 +54,7 @@ class dataLoader:
         else:
             # handle data on deaths
             data_counties = pd.read_sql(
-                f'select c.date, c.state,c.deaths, p.population from counties c left join county_population p on c.fips = p.fips where c.state in ({binding_string});',
+                f'select c.date, c.state,c.deaths, c.population from county_enhanced c where c.state in ({binding_string});',
                 con=self.dbc,
                 params=county_list)
             data_counties['date'] = pd.to_datetime(data_counties['date'])
@@ -81,7 +81,7 @@ class dataLoader:
     def all_counties(self):
         return sorted(
             list(
-                pd.read_sql('select distinct state from counties',
+                pd.read_sql('select distinct state from county_enhanced',
                             con=self.dbc)['state']))
 
 
