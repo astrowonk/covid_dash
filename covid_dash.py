@@ -7,6 +7,7 @@ import plotly.express as px
 import pandas as pd
 from sqlalchemy.engine import create_engine
 from md_text import about_text, markdown_text
+from pypika import Query, Table
 
 # state_df['date'] = pd.to_datetime(state_df['date'])
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
@@ -46,13 +47,13 @@ class dataLoader:
                 con=self.dbc,
                 params=county_list)
             data_county['fips'] = data_county['fips'].astype(int)
-            fips_params = list(data_county['fips'].unique())
-            fips_binding_string = ','.join(['?'] * len(fips_params))
 
-            data_population = pd.read_sql(
-                f"select fips, population from county_population where fips in ({fips_binding_string})",
-                con=self.dbc,
-                params=fips_params)
+            fips_list = list(data_county['fips'].unique())
+            county_table = Table('county_population')
+            fips_query = Query.from_(county_table).select(
+                county_table.fips, county_table.population).where(
+                    county_table.fips.isin(fips_list)).get_sql(quote_char="")
+            data_population = pd.read_sql(fips_query, con=self.dbc)
             data_population['fips'] = data_population['fips'].astype(int)
             data_counties = pd.merge(data_county,
                                      data_population,
