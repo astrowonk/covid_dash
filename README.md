@@ -9,7 +9,7 @@ The `download_and_merge.py` script checks for the most recent commit time of the
 
 The county data is much larger, and the merges more memory instensive, at least on relative to the memory on my virtual server, using `pandas`. I do some light processing on the raw csv file line by line in python, then use `sqlite3` command line utility to efficiently load the csv file into the sqlite database with `county_processing.sql`. This is much faster than pandas + sql alchemy, uses less memory, and less cpu. 
 
-`sqlite3` then joins the county data and county population and stores a new enhanced table so no join is requried at runtime.
+`sqlite3` then joins the county data and county population and stores a new enhanced table so no join is required at runtime. The `github` api is used to check the NY Time repository every hour, and only downloand update the database if the files have been updated.
 
 
 
