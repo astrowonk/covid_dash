@@ -46,10 +46,13 @@ class dataLoader:
                 con=self.dbc,
                 params=county_list)
             data_county['fips'] = data_county['fips'].astype(int)
+            fips_params = list(data_county['fips'].unique())
+            fips_binding_string = ','.join(['?'] * len(fips_params))
+
             data_population = pd.read_sql(
-                f"select fips, population from county_population where state in ({binding_string})",
+                f"select fips, population from county_population where fips in ({fips_binding_string})",
                 con=self.dbc,
-                params=county_list)
+                params=fips_params)
             data_population['fips'] = data_population['fips'].astype(int)
             data_counties = pd.merge(data_county,
                                      data_population,
