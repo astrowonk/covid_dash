@@ -193,8 +193,7 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
         Input("data-type", "value"),
     ],
 )
-def update_line_chart(states, counties, rolling_days, data_type,
-                      existing_figure):
+def update_line_chart(states, counties, rolling_days, data_type):
     states_and_counties = states + counties
     if data_type == 'Cases':
         y_axis_label = "New Reported Cases Per 100,000"
