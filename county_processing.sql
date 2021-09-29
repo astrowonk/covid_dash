@@ -1,5 +1,5 @@
-drop table if exists counties;
-CREATE TEMPORARY TABLE counties (
+
+CREATE TABLE counties (
 	date TEXT,
 	state TEXT,
 	fips INTEGER,
@@ -7,8 +7,7 @@ CREATE TEMPORARY TABLE counties (
 	deaths INTEGER
 );
 .mode csv
-.import data_cache/temp.csv "temp.counties"
-
+.import data_cache/temp.csv counties
 
 
 --create index temp.idx_state on counties(state);
@@ -30,7 +29,7 @@ select c.date,
 	c.cases,
 	c.deaths,
 	p.population
-from "temp.counties" c
+from counties c
 	left join county_population p on c.fips = p.fips;
 CREATE INDEX idx_state_enhanced ON county_enhanced (state);
-drop table if exists "temp.counties";
+drop table if exists counties;
