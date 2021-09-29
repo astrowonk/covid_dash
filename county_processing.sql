@@ -7,7 +7,7 @@ CREATE TEMPORARY TABLE counties (
 	deaths INTEGER
 );
 .mode csv
-.import data_cache/temp.csv temp.counties
+.import data_cache/temp.csv "temp.counties"
 
 
 
