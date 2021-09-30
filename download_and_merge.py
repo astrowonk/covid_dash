@@ -8,6 +8,7 @@ from github import Github
 from datetime import datetime
 from os.path import getmtime
 import subprocess
+import pytz
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 dytpe_dict = {
@@ -23,7 +24,9 @@ def check_for_new_download():
     gh = Github()
     repo = gh.get_repo('nytimes/covid-19-data')
     commits = repo.get_commits(path='us-counties.csv')
-    gh_mod_time = commits[0].commit.committer.date
+    gh_mod_time = commits[0].commit.committer.date.replace(
+        tzinfo=pytz.utc).astimezone(
+            pytz.timezone('America/New_York')).replace(tzinfo=None)
     file_mod_time = datetime.fromtimestamp(
         getmtime('data_cache/covid_dash.db'))
     print(
