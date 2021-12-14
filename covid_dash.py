@@ -102,7 +102,7 @@ STYLE = {"marginBottom": 20, "marginTop": 20}
 
 controls = dbc.Card(
     [
-        dbc.FormGroup([
+        html.Div([
             html.Label("Choose Data Type"),
             dcc.Dropdown(id='data-type',
                          options=[{
@@ -131,7 +131,7 @@ controls = dbc.Card(
                          multi=True,
                          persistence=True)
         ]),
-        dbc.FormGroup([
+        html.Div([
             html.Label("Rolling Average Days"),
             dcc.Slider(
                 id="rolling_days",
@@ -152,10 +152,11 @@ main_tab_content = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(controls, md=4),
-                dbc.Col(dbc.Spinner(
-                    [
-                        dcc.Graph(id="line-chart"),
-                    ], debounce=100, color='info'),
+                dbc.Col(dbc.Spinner([
+                    dcc.Graph(id="line-chart"),
+                ],
+                                    delay_hide=100,
+                                    color='info'),
                         md=8),
             ],
             align="center",
