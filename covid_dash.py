@@ -98,7 +98,7 @@ app = dash.Dash("covid_dash",
                     },
                 ])
 server = app.server
-STYLE = {"marginBottom": 20, "marginTop": 20}
+STYLE = {"marginBottom": 30, "marginTop": 20}
 
 controls = dbc.Card(
     [
@@ -262,9 +262,9 @@ def update_line_chart(states, counties, rolling_days, data_type, show_hover,
     fig.update_layout(margin={
         'l': 1,
         'r': 1,
-        'b': 1,
+        'b': 3,
         't': 10,
-        'pad': 1,
+        'pad': 8,
     },
                       legend=dict(yanchor="top",
                                   y=0.99,
