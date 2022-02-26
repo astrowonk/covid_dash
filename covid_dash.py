@@ -143,6 +143,20 @@ controls = dbc.Card(
                        for x in range(15)},
             )
         ]),
+        html.Div(children=[
+            dbc.Checkbox(
+                label="Show Hover Data",
+                id='show_hover',
+                persistence=True,
+                value=True,
+            ),
+            dbc.Checkbox(
+                label="Show Spikeline",
+                id='show_spike',
+                persistence=True,
+                value=False,
+            )
+        ]),
     ],
     body=True,
 )
@@ -185,10 +199,14 @@ app.layout = dbc.Container([dcc.Markdown(markdown_text), tabs], style=STYLE)
         Input('counties', 'value'),
         Input("rolling_days", "value"),
         Input("data-type", "value"),
+        Input("show_hover", "value"),
+        Input("show_spike", "value"),
     ],
 )
-def update_line_chart(states, counties, rolling_days, data_type):
+def update_line_chart(states, counties, rolling_days, data_type, show_hover,
+                      show_spike):
     states_and_counties = states + counties
+
     if data_type == 'Cases':
         y_axis_label = "New Reported Cases Per 100,000"
         y_variable = 'rolling_case_growth_per_100K'
@@ -230,6 +248,8 @@ def update_line_chart(states, counties, rolling_days, data_type):
                   color="state",
                   hover_data=hover_data,
                   labels={'state': ''})
+    if not show_hover:
+        fig.update_traces(hovertemplate=" ")
 
     fig.update_layout(margin={
         'l': 1,
@@ -245,8 +265,9 @@ def update_line_chart(states, counties, rolling_days, data_type):
                       xaxis_title=None,
                       yaxis_title=y_axis_label,
                       autosize=True,
-                      font=dict(size=12))
-    fig.update_yaxes(automargin=True)
+                      font=dict(size=12),
+                      hovermode='closest')
+    fig.update_yaxes(automargin=True, showspikes=show_spike)
     fig.update_xaxes(automargin=True)
 
     return fig
