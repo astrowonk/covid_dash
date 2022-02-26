@@ -144,11 +144,20 @@ controls = dbc.Card(
             )
         ]),
         html.Div(children=[
-            dbc.Checkbox(
-                label="Show Hover Data",
+            "Hover Data:",
+            dbc.RadioItems(
                 id='show_hover',
+                options=[{
+                    'label': x.title(),
+                    'value': x
+                } for x in [
+                    'none',
+                    'minimal',
+                    'full',
+                ]],
                 persistence=True,
-                value=True,
+                value='minimal',
+                inline=True,
             ),
             dbc.Checkbox(
                 label="Show Spikeline",
@@ -242,14 +251,13 @@ def update_line_chart(states, counties, rolling_days, data_type, show_hover,
         dff["rolling_new_deaths_per_100K"] = dff.groupby(
             'state')['new_deaths_per_100K'].transform(
                 lambda s: s.rolling(rolling_days, min_periods=1).mean())
+
     fig = px.line(dff,
                   x="date",
                   y=y_variable,
                   color="state",
                   hover_data=hover_data,
                   labels={'state': ''})
-    if not show_hover:
-        fig.update_traces(hovertemplate=" ")
 
     fig.update_layout(margin={
         'l': 1,
@@ -267,6 +275,12 @@ def update_line_chart(states, counties, rolling_days, data_type, show_hover,
                       autosize=True,
                       font=dict(size=12),
                       hovermode='closest')
+    if show_hover == 'minimal':
+        fig.update_layout(hovermode="x")
+        fig.update_traces(hovertemplate=None)
+    elif show_hover == 'none':
+        fig.update_traces(hovertemplate=None, hoverinfo='none')
+
     fig.update_yaxes(automargin=True,
                      showspikes=show_spike,
                      spikemode="across")
