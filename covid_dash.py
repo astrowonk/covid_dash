@@ -267,7 +267,9 @@ def update_line_chart(states, counties, rolling_days, data_type, show_hover,
                       autosize=True,
                       font=dict(size=12),
                       hovermode='closest')
-    fig.update_yaxes(automargin=True, showspikes=show_spike)
+    fig.update_yaxes(automargin=True,
+                     showspikes=show_spike,
+                     spikemode="across")
     fig.update_xaxes(automargin=True)
 
     return fig
