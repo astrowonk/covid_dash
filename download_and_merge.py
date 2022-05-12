@@ -22,15 +22,23 @@ dytpe_dict = {
 def check_for_new_download():
     """Check if github mod time is later than downloaded file modtime and return True if it needs to be dowloaded again."""
     gh = Github()
+    current_year = datetime.now().year
+
     repo = gh.get_repo('nytimes/covid-19-data')
-    commits = repo.get_commits(path='us-counties.csv')
+    try:
+        print(f"Getting commits for {current_year}")
+        commits = repo.get_commits(path=f'us-counties-{current_year}.csv')
+        checked_file_name = f'us-counties-{current_year}.csv'
+    except:
+        commits = repo.get_commits(path=f'us-counties-{current_year-1}.csv')
+        checked_file_name = f'us-counties-{current_year}.csv'
     gh_mod_time = commits[0].commit.committer.date.replace(
         tzinfo=pytz.utc).astimezone(
             pytz.timezone('America/New_York')).replace(tzinfo=None)
     file_mod_time = datetime.fromtimestamp(
         getmtime('data_cache/covid_dash.db'))
     print(
-        f"Github Last commit {gh_mod_time}, Database mod time {file_mod_time}")
+        f"Github Last commit {gh_mod_time} for *{checked_file_name}*, Database mod time {file_mod_time}")
     return gh_mod_time > file_mod_time
 
 
@@ -121,8 +129,8 @@ def upload_state_to_sql():
 
 if __name__ == '__main__':
 
-#    if check_for_new_download():
-    if True:
+    #    if check_for_new_download():
+    if check_for_new_download():
 
         print("Writing to sql states")
 
