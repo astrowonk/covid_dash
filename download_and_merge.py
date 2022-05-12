@@ -37,9 +37,10 @@ def check_for_new_download():
 def load_and_rewrite_county_csv():
     """Memory saving line by line csv load and concatenate county and state"""
     print("Writing new csv file")
+    current_year = datetime.now().year
     urlretrieve(
-        'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv',
-        filename='data_cache/us-counties.csv')
+        f'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-{current_year}.csv',
+        filename=f'data_cache/us-counties-{current_year}.csv')
 
     with open('data_cache/temp.csv', 'w', newline='') as csvfile:
         fieldnames = ['date', 'state', 'fips', 'cases', 'deaths']
@@ -48,16 +49,16 @@ def load_and_rewrite_county_csv():
                               quotechar='"',
                               quoting=csv.QUOTE_MINIMAL)
         mywriter.writerow(fieldnames)
+        for year in list(range(2020, current_year + 1, 1)):
+            with open(f'data_cache/us-counties-{year}.csv') as csvfile:
+                reader = csv.reader(csvfile, delimiter=',')
+                header = next(reader)
+                print(header)
+                for row in tqdm(reader):
 
-        with open('data_cache/us-counties.csv') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
-            header = next(reader)
-            print(header)
-            for row in tqdm(reader):
-
-                new_entry = [row[1] + ', ' + row[2]]
-                new_row = row[:1] + new_entry + row[3:]
-                mywriter.writerow(new_row)
+                    new_entry = [row[1] + ', ' + row[2]]
+                    new_row = row[:1] + new_entry + row[3:]
+                    mywriter.writerow(new_row)
 
 
 def merge_county_pop(county_data, pop_data):
@@ -120,7 +121,9 @@ def upload_state_to_sql():
 
 if __name__ == '__main__':
 
-    if check_for_new_download():
+#    if check_for_new_download():
+    if True:
+
         print("Writing to sql states")
 
         upload_state_to_sql()
