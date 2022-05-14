@@ -9,6 +9,7 @@ from datetime import datetime
 from os.path import getmtime
 import subprocess
 import pytz
+import argparse
 
 dbc = create_engine('sqlite:///data_cache/covid_dash.db')
 dytpe_dict = {
@@ -38,7 +39,8 @@ def check_for_new_download():
     file_mod_time = datetime.fromtimestamp(
         getmtime('data_cache/covid_dash.db'))
     print(
-        f"Github Last commit {gh_mod_time} for *{checked_file_name}*, Database mod time {file_mod_time}")
+        f"Github Last commit {gh_mod_time} for *{checked_file_name}*, Database mod time {file_mod_time}"
+    )
     return gh_mod_time > file_mod_time
 
 
@@ -129,8 +131,11 @@ def upload_state_to_sql():
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force-download", action='store_true', default=False)
+    args = parser.parse_args()
     #    if check_for_new_download():
-    if check_for_new_download():
+    if args.force_download or check_for_new_download():
 
         print("Writing to sql states")
 
