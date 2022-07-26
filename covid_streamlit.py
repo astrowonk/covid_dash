@@ -4,6 +4,9 @@ import plotly.express as px
 from dataLoader import dataLoader
 myDataLoader = dataLoader()
 
+st.set_page_config(page_title="Covid Case Growth Plots", layout='wide')
+
+st.title('Covid Case Growth Plots')
 ## layout
 with st.sidebar:
     states = st.multiselect('State:', myDataLoader.all_states(), ['Virginia'])
@@ -60,9 +63,11 @@ if show_hover == 'minimal':
     fig.update_traces(hovertemplate=None)
 elif show_hover == 'none':
     fig.update_traces(hovertemplate=None, hoverinfo='none')
-fig.update_yaxes(automargin=True,
-                    showspikes=show_spike,
-                    spikemode="across")
+fig.update_yaxes(
+    automargin=True,
+    showspikes=show_spike,
+    spikemode="across",
+)
 fig.update_xaxes(automargin=True)
 
 st.plotly_chart(fig, use_container_width=False)
