@@ -12,17 +12,26 @@ with st.sidebar:
     states = st.multiselect('State:', myDataLoader.all_states(), ['Virginia'])
     counties = st.multiselect('Counties:', myDataLoader.all_counties(),
                               ['Henrico, Virginia'])
+    data_type = st.selectbox('Data Type:', ['Cases', 'Deaths'])
     rolling_days = st.slider('Rolling Average Days:', 1, 14, 7)
     show_hover = st.radio('Show Hover Data:', ['none', 'minimal', 'full'], 2)
     show_spike = st.checkbox('Show Spikeline:', False)
 
-y_axis_label = "New Reported Cases Per 100,000"
-y_variable = 'rolling_case_growth_per_100K'
-hover_data = [
-    'date', 'rolling_new_cases', 'rolling_case_growth_per_100K', 'New Cases',
-    'case_growth_per_100K'
-]
-cases = True
+if data_type == 'Cases':
+    y_axis_label = "New Reported Cases Per 100,000"
+    y_variable = 'rolling_case_growth_per_100K'
+    hover_data = [
+        'date', 'rolling_new_cases', 'rolling_case_growth_per_100K',
+        'New Cases', 'case_growth_per_100K'
+    ]
+    cases = True
+else:
+    y_axis_label = "New Reported Deaths Per 100,000"
+    y_variable = 'rolling_new_deaths_per_100K'
+    hover_data = [
+        'date', 'rolling_new_deaths_per_100K', 'new_deaths_per_100K'
+    ]
+    cases = False
 
 states_and_counties = states + counties
 
@@ -33,11 +42,17 @@ dff = myDataLoader.get_data(states_and_counties,
                             cases=cases).sort_values(["date",
                                                       "state"]).reset_index()
 
-dff["rolling_case_growth_per_100K"] = dff.groupby(
-    'state')['case_growth_per_100K'].transform(
+if cases:
+    dff["rolling_case_growth_per_100K"] = dff.groupby(
+        'state')['case_growth_per_100K'].transform(
+            lambda s: s.rolling(rolling_days, min_periods=1).mean())
+    dff["rolling_new_cases"] = dff.groupby('state')['New Cases'].transform(
         lambda s: s.rolling(rolling_days, min_periods=1).mean())
-dff["rolling_new_cases"] = dff.groupby('state')['New Cases'].transform(
-    lambda s: s.rolling(rolling_days, min_periods=1).mean())
+else:
+
+    dff["rolling_new_deaths_per_100K"] = dff.groupby(
+        'state')['new_deaths_per_100K'].transform(
+            lambda s: s.rolling(rolling_days, min_periods=1).mean())
 
 fig = px.line(dff,
               x="date",
