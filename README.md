@@ -11,5 +11,6 @@ The county data is much larger, and the merges more memory instensive, at least 
 
 `sqlite3` then joins the county data and county population and stores a new enhanced table so no join is required at runtime. The `github` api is used to check the NY Time repository every hour, and only update the database if the files have been updated.
 
+The `rest_api.py` file contains a simple Flask app that serves the sqlite data over a REST api, returning json data. This is used to share the app to a Streamlit version ([source](https://github.com/astrowonk/covid_streamlit)), running on [the Streamlit Cloud](https://astrowonk-covid-streamlit-covid-streamlit-eis1xz.streamlitapp.com).
 
 
