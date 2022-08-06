@@ -10,11 +10,6 @@ bp = Blueprint('api', __name__, template_folder='templates')
 myDataLoader = dataLoader()
 
 
-@bp.route('/', methods=['GET'])
-def something():
-    return "Hello World!"
-
-
 @bp.route(f'/api/v1/{api_key}/all_states', methods=['GET'])
 def api_list_states():
     return (jsonify(myDataLoader.all_states()))
