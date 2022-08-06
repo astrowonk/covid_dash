@@ -6,6 +6,9 @@ app = Flask(__name__)
 app.config["APPLICATION_ROOT"] = "/covid_api"
 myDataLoader = dataLoader()
 
+@app.route('/', methods=['GET'])
+def something():
+    return "Hello World!"
 
 @app.route(f'/api/v1/{api_key}/all_states', methods=['GET'])
 def api_list_states():
