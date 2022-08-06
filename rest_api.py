@@ -1,22 +1,25 @@
 from flask import Flask, request, jsonify
 from dataLoader import dataLoader
+from api_config import api_key
 
 app = Flask(__name__)
+
+server = app.server
 
 myDataLoader = dataLoader()
 
 
-@app.route('/api/v1/all_states', methods=['GET'])
+@app.route(f'/api/v1/{api_key}/all_states', methods=['GET'])
 def api_list_states():
     return (jsonify(myDataLoader.all_states()))
 
 
-@app.route('/api/v1/all_counties', methods=['GET'])
+@app.route(f'/api/v1/{api_key}/all_counties', methods=['GET'])
 def api_list_counties():
     return (jsonify(myDataLoader.all_counties()))
 
 
-@app.route('/api/v1/cases/<states>', methods=['GET'])
+@app.route(f'/api/v1/{api_key}/cases/<states>', methods=['GET'])
 def api_get_states(states):
     state_list = states.split('+')
     return (jsonify(
