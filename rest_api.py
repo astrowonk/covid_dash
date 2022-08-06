@@ -21,11 +21,19 @@ def api_list_counties():
 
 
 @bp.route(f'/api/v1/{api_key}/cases/<states>', methods=['GET'])
-def api_get_states(states):
+def api_get_cases(states):
     state_list = states.split('+')
     return (jsonify(
         myDataLoader.get_data(state_list,
                               cases=True).to_dict(orient='records')))
+
+
+@bp.route(f'/api/v1/{api_key}/deaths/<states>', methods=['GET'])
+def api_get_deaths(states):
+    state_list = states.split('+')
+    return (jsonify(
+        myDataLoader.get_data(state_list,
+                              cases=False).to_dict(orient='records')))
 
 
 app.register_blueprint(
