@@ -3,7 +3,7 @@ from dataLoader import dataLoader
 from api_config import api_key
 
 app = Flask(__name__)
-
+app.config["APPLICATION_ROOT"] = "/covid_api"
 myDataLoader = dataLoader()
 
 
