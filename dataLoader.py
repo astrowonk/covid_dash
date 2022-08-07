@@ -34,6 +34,12 @@ class dataLoader:
                 f'select c.date, c.state,c.cases, c.population from county_enhanced c where c.state in ({binding_string});',
                 con=self.dbc,
                 params=county_list)
+
+            #why not precompute all of this and store it in the sql database? Because I'm pretty sure I don't enough memory on the
+            #server to group by all states and counties to do all these shifts and calculations on the entire data set at once.
+
+            # though I could probably store cases per 100k? and then compute the delta from those.
+
             data_counties['date'] = pd.to_datetime(data_counties['date'])
             data_counties.sort_values('date', inplace=True)
             data_counties['case_growth'] = data_counties.groupby(
