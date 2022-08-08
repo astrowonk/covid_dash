@@ -41,6 +41,14 @@ app.register_blueprint(
     url_prefix="/covid_api",
 )
 
+
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 7200
+    response.cache_control.public = True
+    return response
+
+
 if __name__ == "__main__":
     app.debug = True
     app.run(debug=True)
