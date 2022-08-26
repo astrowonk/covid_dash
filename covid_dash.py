@@ -10,8 +10,7 @@ from dataLoader import dataLoader
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
 
 import os
-parent_dir = os.path.dirname(os.getcwd()).split('/')[-1]
-
+parent_dir = os.getcwd().split('/')[-1]
 
 myDataLoader = dataLoader()
 
