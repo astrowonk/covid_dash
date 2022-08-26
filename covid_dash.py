@@ -9,13 +9,14 @@ from dataLoader import dataLoader
 # state_df['date'] = pd.to_datetime(state_df['date'])
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
 
-
+import os
+parent_dir = os.path.dirname(os.getcwd()).split('/')[-1]
 
 
 myDataLoader = dataLoader()
 
 app = dash.Dash("covid_dash",
-                url_base_pathname="/dash/covid/",
+                url_base_pathname=f"/dash/{parent_dir}/",
                 external_stylesheets=[dbc.themes.YETI],
                 title="Covid Case Growth Plots",
                 meta_tags=[
