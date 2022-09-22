@@ -1,8 +1,5 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
 import plotly.express as px
 from md_text import about_text, markdown_text
 from dataLoader import dataLoader
@@ -14,7 +11,7 @@ parent_dir = os.getcwd().split('/')[-1]
 
 myDataLoader = dataLoader()
 
-app = dash.Dash("covid_dash",
+app = Dash("covid_dash",
                 url_base_pathname=f"/dash/{parent_dir}/",
                 external_stylesheets=[dbc.themes.YETI],
                 title="Covid Case Growth Plots",
