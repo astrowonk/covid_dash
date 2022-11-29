@@ -7,20 +7,21 @@ from dataLoader import dataLoader
 # I think this is here because the layout needs this list and I can't get it from  DataLoader?
 
 from pathlib import Path
-parent_dir = Path().absolute().parent.stem
+
+parent_dir = Path().absolute().stem
 
 myDataLoader = dataLoader()
 
 app = Dash("covid_dash",
-                url_base_pathname=f"/dash/{parent_dir}/",
-                external_stylesheets=[dbc.themes.YETI],
-                title="Covid Case Growth Plots",
-                meta_tags=[
-                    {
-                        "name": "viewport",
-                        "content": "width=device-width, initial-scale=1"
-                    },
-                ])
+           url_base_pathname=f"/dash/{parent_dir}/",
+           external_stylesheets=[dbc.themes.YETI],
+           title="Covid Case Growth Plots",
+           meta_tags=[
+               {
+                   "name": "viewport",
+                   "content": "width=device-width, initial-scale=1"
+               },
+           ])
 server = app.server
 STYLE = {"marginBottom": 30, "marginTop": 20}
 
