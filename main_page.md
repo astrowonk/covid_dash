@@ -1,7 +1,7 @@
 
 ### Covid Case Growth
 
-_The NY Times has stopped updating their data in their repository as of March of 2023._
+_The NY Times has [stopped updating their data](https://www.nytimes.com/2023/03/22/us/covid-data-cdc.html) in their repository as of March of 2023._
 
 Plots are normalized per 100K population. Data is partially preprocessed/merged with census population data and uploaded to a sqlite database twice a day. More details on data sources in the About section below. 
 
